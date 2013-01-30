@@ -44,8 +44,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTDrawing;
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTTwoCellAnchor;
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTPicture;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 import jp.co.flect.excel2canvas.chart.Chart;
 import jp.co.flect.excel2canvas.chart.ChartFactory;
@@ -586,7 +585,7 @@ public class ExcelToCanvasBuilder {
 				Cell cell1 = checkMergedRegion(cw1, 1);
 				Cell cell2 = checkMergedRegion(cw2, 2);
 				
-				Pair<Integer, String> info = getBorder(cell1, cell2, true);
+				BorderInfo info = getBorder(cell1, cell2, true);
 				if (info == null) {
 					if (sx >= 0) {
 						ret.addLineInfo(new ExcelToCanvas.LineInfo(sx, y, x, y, kind, strColor));
@@ -598,14 +597,14 @@ public class ExcelToCanvasBuilder {
 				} else {
 					if (sx < 0) {
 						sx = x;
-						kind = info.getLeft();
-						strColor = info.getRight();
-					} else if (kind != info.getLeft() || !StringUtils.equals(strColor, info.getRight())) {
+						kind = info.getKind();
+						strColor = info.getColor();
+					} else if (kind != info.getKind() || !StringUtils.equals(strColor, info.getColor())) {
 						ret.addLineInfo(new ExcelToCanvas.LineInfo(sx, y, x, y, kind, strColor));
 						updateWriteCell(i, j);
 						sx = x;
-						kind = info.getLeft();
-						strColor = info.getRight();
+						kind = info.getKind();
+						strColor = info.getColor();
 					}
 				}
 				x += getColumnWidth(j);
@@ -634,7 +633,7 @@ public class ExcelToCanvasBuilder {
 				Cell cell1 = checkMergedRegion(cw1, 3);
 				Cell cell2 = checkMergedRegion(cw2, 4);
 				
-				Pair<Integer, String> info = getBorder(cell1, cell2, false);
+				BorderInfo info = getBorder(cell1, cell2, false);
 				if (info == null) {
 					if (sy >= 0) {
 						ret.addLineInfo(new ExcelToCanvas.LineInfo(x, sy, x, y, kind, strColor));
@@ -646,14 +645,14 @@ public class ExcelToCanvasBuilder {
 				} else {
 					if (sy < 0) {
 						sy = y;
-						kind = info.getLeft();
-						strColor = info.getRight();
-					} else if (kind != info.getLeft() || !StringUtils.equals(strColor, info.getRight())) {
+						kind = info.getKind();
+						strColor = info.getColor();
+					} else if (kind != info.getKind() || !StringUtils.equals(strColor, info.getColor())) {
 						ret.addLineInfo(new ExcelToCanvas.LineInfo(x, sy, x, y, kind, strColor));
 						updateWriteCell(j, i);
 						sy = y;
-						kind = info.getLeft();
-						strColor = info.getRight();
+						kind = info.getKind();
+						strColor = info.getColor();
 					}
 				}
 				y += getRowHeight(j);
@@ -689,14 +688,14 @@ public class ExcelToCanvasBuilder {
 		return b ? cw.getCell() : null;
 	}
 	
-	private Pair<Integer, String> getBorder(Cell cell1, Cell cell2, boolean horizontal) {
+	private BorderInfo getBorder(Cell cell1, Cell cell2, boolean horizontal) {
 		if (cell1 != null) {
 			CellStyle style = cell1.getCellStyle();
 			if (style != null) {
 				int n = horizontal ? style.getBorderBottom() : style.getBorderRight();
 				if (n != CellStyle.BORDER_NONE) {
 					String strColor = FormattedValue.getColorString(horizontal ? exColor.getBottomBorderColor(cell1) : exColor.getRightBorderColor(cell1));
-					return Pair.of(n, strColor);
+					return new BorderInfo(n, strColor);
 				}
 			}
 		}
@@ -706,7 +705,7 @@ public class ExcelToCanvasBuilder {
 				int n = horizontal ? style.getBorderTop() : style.getBorderLeft();
 				if (n != CellStyle.BORDER_NONE) {
 					String strColor = FormattedValue.getColorString(horizontal ? exColor.getTopBorderColor(cell2) : exColor.getLeftBorderColor(cell2));
-					return Pair.of(n, strColor);
+					return new BorderInfo(n, strColor);
 				}
 			}
 		}
@@ -1130,6 +1129,20 @@ public class ExcelToCanvasBuilder {
 		
 		public boolean isExpandCell(CellWrapper cw);
 		
+	}
+	
+	private static class BorderInfo {
+		
+		private int kind;
+		private String color;
+		
+		public BorderInfo(int k, String c) {
+			this.kind = k;
+			this.color = c;
+		}
+		
+		public int getKind() { return this.kind;}
+		public String getColor() { return this.color;}
 	}
 	
 }
