@@ -51,7 +51,7 @@ import jp.co.flect.excel2canvas.chart.ChartFactory;
 import jp.co.flect.excel2canvas.chart.Flotr2ChartFactory;
 
 /**
- * ExcelをHTML5のCanvasに変換する
+ * Convert Excel file to JSON.
  */
 public class ExcelToCanvasBuilder {
 	
@@ -82,6 +82,7 @@ public class ExcelToCanvasBuilder {
 	private boolean includeEmptyStr = false;
 	private boolean includeRawData = false;
 	private boolean includeComment = false;
+	private boolean includeChart = false;
 	private ExpandChecker expandChecker = null;
 	
 	public ExcelToCanvasBuilder() {
@@ -148,6 +149,9 @@ public class ExcelToCanvasBuilder {
 	
 	public boolean isIncludeComment() { return this.includeComment;}
 	public void setIncludeComment(boolean b) { this.includeComment = b;}
+	
+	public boolean isIncludeChart() { return this.includeChart;}
+	public void setIncludeChart(boolean b) { this.includeChart = b;}
 	
 	public ExpandChecker getExpandChecker() { return this.expandChecker;}
 	public void setExpandChecker(ExpandChecker c) { this.expandChecker = c;}
@@ -333,7 +337,9 @@ public class ExcelToCanvasBuilder {
 		buildHorizontalLines(ret, startRow, this.maxRow, startCol, maxCol);
 		buildVerticalLines(ret, startRow, this.maxRow, startCol, maxCol);
 		buildPictures(ret);
-		buildCharts(ret);
+		if (this.includeChart) {
+			buildCharts(ret);
+		}
 		
 		//高さと幅の再計算
 		if (this.writeRow + 1 < this.maxRow - 1) {
