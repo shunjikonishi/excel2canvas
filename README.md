@@ -78,7 +78,7 @@ If you want to display chart, you must include [Flotr2](http://humblesoftware.co
 
 Samles
 ------
-[ExcelNote](https://excelnote.herokuapp.com/) is an application that uses this library.
+[ExcelNote](https://excelnote.herokuapp.com/) is an application that uses this library.  
 If the Excel file is attached in Evernote, it allows you to display and edit it on the web browser.
 
 And if that note is shared with the world, it is published to everyone.
