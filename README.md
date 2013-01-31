@@ -76,8 +76,8 @@ The java library is highly dependent on [Apache POI](http://poi.apache.org/)
 The javascript library is a [jQuery](http://jquery.com/) plugin  
 If you want to display chart, you must include [Flotr2](http://humblesoftware.com/flotr2/)  
 
-Samles
-------
+Samples
+-------
 [ExcelNote](https://excelnote.herokuapp.com/) is an application that uses this library.  
 If the Excel file is attached in Evernote, it allows you to display and edit it on the web browser.
 
