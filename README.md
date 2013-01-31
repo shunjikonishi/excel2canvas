@@ -4,12 +4,12 @@ Excel2Canvas
 
 Overview
 --------
-Excel2Canvas is a library for display an Excel file on the web browser.
+Excel2Canvas is a library to display an Excel file on the web browser.
 
 Its source codes consists of two parts.
 
 1. **Java.** It is used to convert Excel file to JSON.
-2. **JavaScript.** It is used to draw Excel like view on the web browser.
+2. **JavaScript.** It is used to draw Excel view on the web browser.
 
 Usage
 -----
@@ -72,11 +72,9 @@ Supported Excel features
     
 Dependencies
 ------------
-The java library is highly dependent on [Apache POI](http://poi.apache.org/)
-
-The javascript library is a [jQuery](http://jquery.com/) plugin
-
-If you want to display chart, you must include [Flotr2](http://humblesoftware.com/flotr2/)
+The java library is highly dependent on [Apache POI](http://poi.apache.org/)  
+The javascript library is a [jQuery](http://jquery.com/) plugin  
+If you want to display chart, you must include [Flotr2](http://humblesoftware.com/flotr2/)  
 
 Samles
 ------
@@ -89,6 +87,6 @@ Followings are some of its samples.(Japanese only)
 
 - [Time schedule](http://excelnote.herokuapp.com/share/note/s91/90ae165a-18b7-4879-a667-6ad15bbcd57b/5e1a3c243456d0e3daf8bd42005a22e0?theme=humanity)
 - [The result of a baseball game](http://excelnote.herokuapp.com/share/note/s91/e94bd16f-465a-4a24-b71e-dff906cf3395/67079ce23db9c8af6df06b33d12c8e70?theme=sunny)
-- [Purchase order](https://excelnote.herokuapp.com/share/excel/s91/09880d80-43bd-4728-9f8f-300b84a3a32c/151561d3185ea4c1dc7fa3ab3f2db653?sheet=%E7%99%BA%E6%B3%A8%E6%9B%B8&theme=redmond)
+- [Purchase order](https://excelnote.herokuapp.com/share/excel/s91/09880d80-43bd-4728-9f8f-300b84a3a32c/151561d3185ea4c1dc7fa3ab3f2db653?sheet=%E7%99%BA%E6%B3%A8%E6%9B%B8&theme=redmond)  
   It is able to print as is from web browser.
   
