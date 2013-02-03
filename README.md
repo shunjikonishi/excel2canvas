@@ -2,7 +2,6 @@ Excel2Canvas
 -----------------
 -----------------
 
-
 Overview
 --------
 Excel2Canvas is a library to display an Excel file on the web browser.
