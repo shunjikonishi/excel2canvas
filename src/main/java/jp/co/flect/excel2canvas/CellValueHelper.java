@@ -8,6 +8,9 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.formula.eval.NotImplementedException;
 
+/**
+ * Helper class for get cell values.
+ */
 public class CellValueHelper {
 	
 	private FormulaEvaluator evaluator;

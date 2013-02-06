@@ -18,6 +18,9 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
+/**
+ * Utility
+ */
 public class ExcelUtils {
 	
 	/** POIのWorkbookFactoryはInputStreamをクローズしてくれない */

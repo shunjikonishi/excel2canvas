@@ -1,5 +1,8 @@
 package jp.co.flect.excel2canvas.format;
 
+/**
+ * FormatHolder
+ */
 public class FormatHolder {
 	
 	private FormatInfo[] formats;

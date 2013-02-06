@@ -11,6 +11,9 @@ import java.text.Format;
 import org.apache.poi.ss.usermodel.Workbook;
 import jp.co.flect.excel2canvas.ExcelColor;
 
+/**
+ * Wrapper class of Excel format information.
+ */
 public class FormatInfo {
 	
 	private static final Map<String, Locale> localeMap = new HashMap<String, Locale>();

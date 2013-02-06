@@ -16,7 +16,7 @@ import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder;
 
 /**
- * Workbookの色を取得するクラス
+ * Wrapper class of Excel color.
  */
 public class ExcelColor {
 	

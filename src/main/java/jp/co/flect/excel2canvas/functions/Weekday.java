@@ -15,8 +15,8 @@ import org.apache.poi.ss.formula.functions.Function2Arg;
 import org.apache.poi.ss.usermodel.DateUtil;
 
 /**
- * WEEKDAY関数
- * ロジック自体はorg.apache.poi.ss.formula.functions.CalendarFieldFunctionからのコピー
+ * Function - WEEKDAY<br>
+ * The logic of this class is copied from org.apache.poi.ss.formula.functions.CalendarFieldFunction
  */
 public class Weekday implements Function1Arg, Function2Arg {
 	

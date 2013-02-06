@@ -8,7 +8,8 @@ import jp.co.flect.excel2canvas.ExcelToCanvas.PictureInfo;
 import jp.co.flect.excel2canvas.ExcelToCanvas.StrInfo;
 
 /**
- * ExcelToCanvasをImageに書き出します
+ * !!! Not implemented yet.<br>
+ * Convert ExcelToCanvas to the image.
  */
 public class ImageWriter {
 	
@@ -28,6 +29,7 @@ public class ImageWriter {
 	}
 	
 	private void writeFills(BufferedImage img, FillInfo info) {
+		//ToDo
 	}
 	
 }

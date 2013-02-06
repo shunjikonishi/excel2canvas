@@ -8,7 +8,7 @@ import org.apache.poi.xssf.usermodel.helpers.ColumnHelper;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCol;
 
 /**
- * Workbookのセル幅を計算するクラス
+ * Calculate cell width of worksheet.
  */
 public class ColumnWidth {
 	

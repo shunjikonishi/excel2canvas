@@ -42,6 +42,9 @@ import org.openxmlformats.schemas.drawingml.x2006.chart.STBarGrouping;
 import org.openxmlformats.schemas.drawingml.x2006.chart.STGrouping;
 import org.openxmlformats.schemas.drawingml.x2006.chart.STRadarStyle;
 
+/**
+ * ChartFactory implementation by Flotr2
+ */
 public class Flotr2ChartFactory implements ChartFactory {
 	
 	private static final String NAMESPACE_A = "http://schemas.openxmlformats.org/drawingml/2006/main";
@@ -210,7 +213,7 @@ public class Flotr2ChartFactory implements ChartFactory {
 	}
 	
 	private List<String> getNames(XSSFWorkbook workbook, CTAxDataSource src) {
-		if (src.isSetStrRef()) {
+		if (src != null && src.isSetStrRef()) {
 			return getNames(workbook, src.getStrRef());
 		}
 		return new ArrayList<String>();
@@ -338,7 +341,7 @@ public class Flotr2ChartFactory implements ChartFactory {
 		}
 		
 		public boolean isCatNumber() {
-			return getCat().isSetNumRef();
+			return getCat() == null ? false : getCat().isSetNumRef();
 		}
 	}
 	

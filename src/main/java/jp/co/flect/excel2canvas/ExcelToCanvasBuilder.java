@@ -51,7 +51,7 @@ import jp.co.flect.excel2canvas.chart.ChartFactory;
 import jp.co.flect.excel2canvas.chart.Flotr2ChartFactory;
 
 /**
- * Convert Excel file to JSON.
+ * Builder class of ExcelToCanvas.
  */
 public class ExcelToCanvasBuilder {
 	

@@ -3,6 +3,9 @@ package jp.co.flect.excel2canvas.functions;
 import org.apache.poi.ss.formula.eval.FunctionEval;
 import org.apache.poi.ss.formula.functions.Function;
 
+/**
+ * Register costom function to POI.
+ */
 public class FunctionManager {
 	
 	private static boolean registered = false;

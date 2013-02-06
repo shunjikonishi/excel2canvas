@@ -19,7 +19,9 @@ import jp.co.flect.excel2canvas.format.ExcelDateFormat;
 import jp.co.flect.excel2canvas.format.FormatInfo;
 import jp.co.flect.excel2canvas.format.FormatHolder;
 
-//Use from CellValueHelper
+/**
+ * Japanese specific date formatter.
+ */
 class DataFormatterEx{
 	
 	private static final boolean DEBUG;

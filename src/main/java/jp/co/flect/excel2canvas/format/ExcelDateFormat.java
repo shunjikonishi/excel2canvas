@@ -10,6 +10,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 /**
+ * Japanese specific date format.
  * @See http://support.microsoft.com/kb/883199/ja
  * yy	西暦の下 2 桁を表示します。
  * yyyy	西暦を 4 桁で表示します。

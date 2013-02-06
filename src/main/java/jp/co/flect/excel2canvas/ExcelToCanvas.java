@@ -11,7 +11,8 @@ import org.apache.commons.codec.binary.Base64;
 import jp.co.flect.excel2canvas.chart.Chart;
 
 /**
- * ExcelをHTML5のCanvasに変換する
+ * This class is able to convert to JSON string.
+ * It is able to draw on the web browser by jquery.excel2canvas.js (depend on HTML5 canvas)
  */
 public class ExcelToCanvas {
 	
@@ -80,6 +81,10 @@ public class ExcelToCanvas {
 	
 	public String toJson() {
 		return new Gson().toJson(this);
+	}
+	
+	public static ExcelToCanvas fromJson(String json) {
+		return new Gson().fromJson(json, ExcelToCanvas.class);
 	}
 	
 	public static class FillInfo {

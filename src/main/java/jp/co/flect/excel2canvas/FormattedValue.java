@@ -7,6 +7,9 @@ import java.util.GregorianCalendar;
 import java.util.Date;
 import java.math.BigDecimal;
 
+/**
+ * Get cell value as HTML string.
+ */
 public class FormattedValue {
 	
 	public enum Type {
