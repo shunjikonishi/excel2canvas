@@ -116,7 +116,7 @@ public class ExcelToCanvasBuilder {
 	public ExcelToCanvas build(Workbook workbook, String sheetName) {
 		this.workbook = workbook;
 		this.sheet = null;
-		if (sheetName != null) {
+		if (sheetName != null && sheetName.length() > 0) {
 			this.sheet = workbook.getSheet(sheetName);
 		} else {
 			for (int i=0; i<workbook.getNumberOfSheets(); i++) {
@@ -237,7 +237,7 @@ public class ExcelToCanvasBuilder {
 		}
 	}
 	
-	public ExcelToCanvas build() {
+	private ExcelToCanvas build() {
 		ExcelToCanvas ret = new ExcelToCanvas();
 		
 		int startRow = 0;
