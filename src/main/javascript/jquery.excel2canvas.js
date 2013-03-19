@@ -34,24 +34,28 @@
 			w = 3;
 		}
 		context.lineWidth = w;
+		var horizontal = line.p[1] == line.p[3];
+		var pad = 0;
+		if (w == 1 || w == 3) {
+			pad = - 0.5;
+		}
 		if (line.color) {
 			context.strokeStyle = line.color;
 		} else {
 			context.strokeStyle = "#000000";
 		}
 		if (kind == BORDER_DOUBLE) {
-			var horizontal = line.p[1] == line.p[3];
 			context.beginPath();
 			if (horizontal) {
-				context.moveTo(line.p[0], line.p[1] - 1);
-				context.lineTo(line.p[2], line.p[3] - 1);
-				context.moveTo(line.p[0], line.p[1] + 2);
-				context.lineTo(line.p[2], line.p[3] + 2);
+				context.moveTo(line.p[0], line.p[1] - 1 + pad);
+				context.lineTo(line.p[2], line.p[3] - 1 + pad);
+				context.moveTo(line.p[0], line.p[1] + 2 + pad);
+				context.lineTo(line.p[2], line.p[3] + 2 + pad);
 			} else {
-				context.moveTo(line.p[0] - 1, line.p[1]);
-				context.lineTo(line.p[2] - 1, line.p[3]);
-				context.moveTo(line.p[0] + 2, line.p[1]);
-				context.lineTo(line.p[2] + 2, line.p[3]);
+				context.moveTo(line.p[0] - 1 + pad, line.p[1]);
+				context.lineTo(line.p[2] - 1 + pad, line.p[3]);
+				context.moveTo(line.p[0] + 2 + pad, line.p[1]);
+				context.lineTo(line.p[2] + 2 + pad, line.p[3]);
 			}
 			context.stroke();
 			context.closePath();
@@ -77,7 +81,6 @@
 			}
 			
 			var bar = true;
-			var horizontal = line.p[1] == line.p[3];
 			context.beginPath();
 			context.moveTo(line.p[0], line.p[1]);
 			if (horizontal) {
@@ -86,14 +89,14 @@
 				var ex = line.p[2];
 				while (cx < ex) {
 					var nx = bar ? bw : sw;
-					if (nx > ex) {
-						nx = ex;
-					}
 					cx += nx;
+					if (cx > ex) {
+						cx = ex;
+					}
 					if (bar) {
-						context.lineTo(cx, y);
+						context.lineTo(cx, y + pad);
 					} else {
-						context.moveTo(cx, y);
+						context.moveTo(cx, y + pad);
 					}
 					bar = !bar;
 				}
@@ -103,14 +106,14 @@
 				var ey = line.p[3];
 				while (cy < ey) {
 					var ny = bar ? bw : sw;
-					if (ny > ey) {
-						ny = ey;
-					}
 					cy += ny;
+					if (cy > ey) {
+						cy = ey;
+					}
 					if (bar) {
-						context.lineTo(x, cy);
+						context.lineTo(x + pad, cy);
 					} else {
-						context.moveTo(x, cy);
+						context.moveTo(x + pad, cy);
 					}
 					bar = !bar;
 				}
@@ -118,9 +121,11 @@
 			context.stroke();
 			context.closePath();
 		} else {
+			var xpad = horizontal ? 0 : line.p[0] == 0 ? -pad : pad;
+			var ypad = horizontal ? line.p[1] == 0 ? -pad : pad : 0;
 			context.beginPath();
-			context.moveTo(line.p[0], line.p[1]);
-			context.lineTo(line.p[2], line.p[3]);
+			context.moveTo(line.p[0] + xpad, line.p[1] + ypad);
+			context.lineTo(line.p[2] + xpad, line.p[3] + ypad);
 			context.stroke();
 			context.closePath();
 		}

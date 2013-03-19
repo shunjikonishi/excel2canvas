@@ -3,6 +3,7 @@ package jp.co.flect.excel2canvas;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.PictureData;
 
@@ -23,6 +24,7 @@ public class ExcelToCanvas {
 	private List<StrInfo> strs = new ArrayList<StrInfo>();
 	private List<PictureInfo> pictures = new ArrayList<PictureInfo>();
 	private List<ChartInfo> charts = new ArrayList<ChartInfo>();
+	private transient Map<String, StrInfo> strMap = null;
 	
 	public int getWidth() { return this.width;}
 	public void setWidth(int n) { this.width = n;}
@@ -50,6 +52,16 @@ public class ExcelToCanvas {
 	
 	public List<ChartInfo> getCharts() { return this.charts;}
 	public void setCharts(List<ChartInfo> list) { this.charts = list;}
+	
+	public StrInfo getStrInfo(String id) {
+		if (this.strMap == null) {
+			this.strMap = new HashMap<String, StrInfo>();
+			for (StrInfo str : this.strs) {
+				this.strMap.put(str.getId(), str);
+			}
+		}
+		return this.strMap.get(id);
+	}
 	
 	//package local constructor
 	ExcelToCanvas() {}
@@ -151,6 +163,8 @@ public class ExcelToCanvas {
 		public int[] getPoints() { return this.p;}
 		public String getId() { return this.id;}
 		public String getText() { return this.text;}
+		public void setText(String s) { this.text = s;}
+		
 		public String getAlign() { return this.align;}
 		public String getStyle() { return this.style;}
 		public String getLink() { return this.link;}

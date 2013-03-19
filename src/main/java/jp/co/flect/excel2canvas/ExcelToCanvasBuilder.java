@@ -11,6 +11,8 @@ import java.util.Locale;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.apache.poi.POIXMLDocumentPart;
 import org.apache.poi.ss.usermodel.Font;
@@ -84,6 +86,7 @@ public class ExcelToCanvasBuilder {
 	private boolean includeComment = false;
 	private boolean includeChart = false;
 	private ExpandChecker expandChecker = null;
+	private Set<String> includeCells = null;
 	
 	public ExcelToCanvasBuilder() {
 		this(Locale.getDefault());
@@ -143,6 +146,16 @@ public class ExcelToCanvasBuilder {
 	
 	public boolean isIncludeEmptyStr() { return this.includeEmptyStr;}
 	public void setIncludeEmptyStr(boolean b) { this.includeEmptyStr = b;}
+	
+	public void addIncludeCell(String cellName) {
+		if (this.includeCells == null) {
+			this.includeCells = new HashSet<String>();
+		}
+		this.includeCells.add(cellName);
+	}
+	public void clearIncludeCells() {
+		this.includeCells = null;
+	}
 	
 	public boolean isIncludeRawData() { return this.includeRawData;}
 	public void setIncludeRawData(boolean b) { this.includeRawData = b;}
@@ -877,15 +890,19 @@ public class ExcelToCanvasBuilder {
 			if (!isMainCell()) {
 				return null;
 			}
+			String id = ExcelUtils.pointToName(col, row);
 			String text = getText();
 			if (text == null) {
-				if (includeEmptyStr || (includeComment && this.cell != null && this.cell.getCellComment() != null)) {
+				if (includeEmptyStr || 
+				    (includeCells != null && includeCells.contains(id)) ||
+				    (includeComment && this.cell != null && this.cell.getCellComment() != null)
+				   ) 
+				{
 					text = "";
 				} else {
 					return null;
 				}
 			}
-			String id = ExcelUtils.pointToName(col, row);
 			
 			//Style
 			int align = CellStyle.ALIGN_LEFT;
