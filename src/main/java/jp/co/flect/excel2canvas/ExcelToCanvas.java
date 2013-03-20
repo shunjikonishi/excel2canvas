@@ -163,7 +163,6 @@ public class ExcelToCanvas {
 		public int[] getPoints() { return this.p;}
 		public String getId() { return this.id;}
 		public String getText() { return this.text;}
-		public void setText(String s) { this.text = s;}
 		
 		public String getAlign() { return this.align;}
 		public String getStyle() { return this.style;}
@@ -175,6 +174,43 @@ public class ExcelToCanvas {
 		
 		public String getRawData() { return this.rawdata;}
 		public void setRawData(String s) { this.rawdata = s;}
+		
+		public void setText(String s) { 
+			this.text = s;
+			if (isAlignGeneral()) {
+				char alignChar = isNumberString(s) ? 'r' : 'l';
+				this.align = alignChar + this.align.substring(1);
+			}
+		}
+		
+		private boolean isAlignGeneral() {
+			return this.align != null && this.align.length() == 3 && this.align.charAt(2) == 'g';
+		}
+		
+		private boolean isNumberString(String s) {
+			if (s == null || s.length() == 0) {
+				return false;
+			}
+			boolean dot = false;
+			for (int i=0; i<s.length(); i++) {
+				char c = s.charAt(i);
+				if (c >= '0' && c <= '9') {
+					continue;
+				} else if (c == '-' && i == 0) {
+					continue;
+				} else if (c == ',') {
+					continue;
+				} else if (c == '.') {
+					if (dot) {
+						return false;
+					}
+					dot = true;
+				} else {
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 	
 	public static class PictureInfo {

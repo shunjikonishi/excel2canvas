@@ -731,7 +731,7 @@ public class ExcelToCanvasBuilder {
 		return null;
 	}
 	
-	private static String getAlignString(int align, int valign) {
+	private static String getAlignString(int align, int valign, boolean general) {
 		StringBuilder buf = new StringBuilder();
 		switch (align) {
 			case CellStyle.ALIGN_CENTER:
@@ -766,6 +766,9 @@ public class ExcelToCanvasBuilder {
 			case CellStyle.VERTICAL_JUSTIFY:
 				buf.append("j");
 				break;
+		}
+		if (general) {
+			buf.append("g");
 		}
 		return buf.toString();
 	}
@@ -905,6 +908,7 @@ public class ExcelToCanvasBuilder {
 			}
 			
 			//Style
+			boolean alignGeneral = true;
 			int align = CellStyle.ALIGN_LEFT;
 			int valign = CellStyle.VERTICAL_CENTER;
 			
@@ -922,6 +926,8 @@ public class ExcelToCanvasBuilder {
 					} else {
 						align = CellStyle.ALIGN_LEFT;
 					}
+				} else {
+					alignGeneral = false;
 				}
 				int indent = style.getIndention();
 				switch (align) {
@@ -1029,7 +1035,7 @@ public class ExcelToCanvasBuilder {
 			}
 			//Formula
 			boolean formula = this.cell != null && cell.getCellType() == Cell.CELL_TYPE_FORMULA;
-			ExcelToCanvas.StrInfo ret = new ExcelToCanvas.StrInfo(p, id, text, getAlignString(align, valign), styleMap, link, comment, commentWidth, formula);
+			ExcelToCanvas.StrInfo ret = new ExcelToCanvas.StrInfo(p, id, text, getAlignString(align, valign, alignGeneral), styleMap, link, comment, commentWidth, formula);
 			if (this.formattedValue != null && ExcelToCanvasBuilder.this.includeRawData) {
 				FormattedValue.Type type = this.formattedValue.getType();
 				if (type == FormattedValue.Type.NUMBER || type == FormattedValue.Type.DATE) {
