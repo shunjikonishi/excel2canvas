@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.PictureData;
 
@@ -61,6 +62,16 @@ public class ExcelToCanvas {
 			}
 		}
 		return this.strMap.get(id);
+	}
+	
+	public void removeEmptyStrings() {
+		Iterator<StrInfo> it = this.strs.iterator();
+		while (it.hasNext()) {
+			StrInfo str = it.next();
+			if (str.getText() == null || str.getText().length() == 0) {
+				it.remove();
+			}
+		}
 	}
 	
 	//package local constructor
@@ -126,6 +137,26 @@ public class ExcelToCanvas {
 		
 	}
 	
+	private static String mapToStyle(Map<String, String> map) {
+		StringBuilder buf = new StringBuilder();
+		for (Map.Entry<String, String> entry : map.entrySet()) {
+			buf.append(entry.getKey()).append(":")
+				.append(entry.getValue()).append(";");
+		}
+		return buf.toString();
+	}
+	
+	private static Map<String, String> styleToMap(String str) {
+		Map<String, String> map = new HashMap<String, String>();
+		String[] values = str.split(";");
+		for (String value : values) {
+			value = value.trim();
+			int idx = value.indexOf(':');
+			map.put(value.substring(0, idx).trim(), value.substring(idx + 1).trim());
+		}
+		return map;
+	}
+	
 	public static class StrInfo {
 		
 		private int[] p;
@@ -139,6 +170,7 @@ public class ExcelToCanvas {
 		private String comment;
 		private Integer commentWidth;
 		private transient Map<String, String> styleMap;
+		private String clazz;
 		
 		public StrInfo(int[] p, String id, String text, String align, Map<String, String> styleMap, String link, String comment, Integer commentWidth, boolean formula) {
 			this.p = p;
@@ -146,12 +178,7 @@ public class ExcelToCanvas {
 			this.text = text;
 			this.align = align;
 			this.styleMap = styleMap;
-			StringBuilder buf = new StringBuilder();
-			for (Map.Entry<String, String> entry : styleMap.entrySet()) {
-				buf.append(entry.getKey()).append(":")
-					.append(entry.getValue()).append(";");
-			}
-			this.style = buf.toString();
+			this.style = mapToStyle(styleMap);
 			this.link = link;
 			this.comment = comment;
 			this.commentWidth = commentWidth;
@@ -159,6 +186,7 @@ public class ExcelToCanvas {
 				this.formula = Boolean.TRUE;
 			}
 		}
+		
 		
 		public int[] getPoints() { return this.p;}
 		public String getId() { return this.id;}
@@ -175,6 +203,9 @@ public class ExcelToCanvas {
 		public String getRawData() { return this.rawdata;}
 		public void setRawData(String s) { this.rawdata = s;}
 		
+		public String getClazz() { return this.clazz;}
+		public void setClazz(String s) { this.clazz = s;}
+		
 		public void setText(String s) { 
 			this.text = s;
 			if (isAlignGeneral()) {
@@ -183,7 +214,13 @@ public class ExcelToCanvas {
 			}
 		}
 		
-		private boolean isAlignGeneral() {
+		public void setText(String s, boolean alignLeft) {
+			this.text = s;
+			char alignChar = alignLeft ? 'l' : 'r';
+			this.align = alignChar + this.align.substring(1);
+		}
+		
+		public boolean isAlignGeneral() {
 			return this.align != null && this.align.length() == 3 && this.align.charAt(2) == 'g';
 		}
 		
@@ -210,6 +247,14 @@ public class ExcelToCanvas {
 				}
 			}
 			return true;
+		}
+		
+		public void resetStyle(String name, String value) {
+			if (this.styleMap == null) {
+				this.styleMap = styleToMap(this.style);
+			}
+			this.styleMap.put(name, value);
+			this.style = mapToStyle(this.styleMap);
 		}
 	}
 	
