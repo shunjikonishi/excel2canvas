@@ -28,6 +28,7 @@ public class FormattedValue {
 	private Color color;
 	private Object rawdata;
 	private Type type;
+	private String formula;
 	
 	public FormattedValue(String value, Type type, Object rawdata) {
 		this(value, type, rawdata, null);
@@ -48,6 +49,9 @@ public class FormattedValue {
 	
 	public Object getRawData() { return this.rawdata;}
 	public void setRawData(Object o) { this.rawdata = o;}
+	
+	public String getFormula() { return this.formula;}
+	public void setFormula(String s) { this.formula = s;}
 	
 	public Color getColor() { return this.color;}
 	public void setColor(Color c) { this.color = c;}

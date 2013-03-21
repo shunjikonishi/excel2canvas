@@ -83,6 +83,9 @@ class DataFormatterEx{
 	
     public FormattedValue formatCellValue(Cell cell, FormulaEvaluator evaluator) {
 		FormattedValue ret = doFormatCellValue(cell, evaluator);
+		if (cell != null && cell.getCellType() == Cell.CELL_TYPE_FORMULA) {
+			ret.setFormula(cell.getCellFormula());
+		}
 		if (DEBUG && cell != null && cell.getCellStyle() != null) {
 			int cellType = cell.getCellType();
 			if (cellType == Cell.CELL_TYPE_FORMULA) {

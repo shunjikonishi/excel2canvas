@@ -72,6 +72,7 @@ public class ExcelToCanvas {
 				it.remove();
 			}
 		}
+		this.strMap = null;
 	}
 	
 	//package local constructor
@@ -198,6 +199,8 @@ public class ExcelToCanvas {
 		public String getComment() { return this.comment;}
 		public int getCommentWidth() { return this.commentWidth != null ? this.commentWidth.intValue() : 0;}
 		public boolean isFormula() { return this.formula != null && this.formula.booleanValue();}
+		public void setFormula(boolean b) { this.formula = b ? Boolean.TRUE : null;}
+		
 		public Map<String, String> getStyleMap() { return this.styleMap;}
 		
 		public String getRawData() { return this.rawdata;}

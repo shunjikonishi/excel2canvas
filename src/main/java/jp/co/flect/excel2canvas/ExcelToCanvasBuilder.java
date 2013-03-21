@@ -898,6 +898,7 @@ public class ExcelToCanvasBuilder {
 			if (text == null) {
 				if (includeEmptyStr || 
 				    (includeCells != null && includeCells.contains(id)) ||
+				    (includeRawData && isFormula()) ||
 				    (includeComment && this.cell != null && this.cell.getCellComment() != null)
 				   ) 
 				{
@@ -1038,7 +1039,9 @@ public class ExcelToCanvasBuilder {
 			ExcelToCanvas.StrInfo ret = new ExcelToCanvas.StrInfo(p, id, text, getAlignString(align, valign, alignGeneral), styleMap, link, comment, commentWidth, formula);
 			if (this.formattedValue != null && ExcelToCanvasBuilder.this.includeRawData) {
 				FormattedValue.Type type = this.formattedValue.getType();
-				if (type == FormattedValue.Type.NUMBER || type == FormattedValue.Type.DATE) {
+				if (isFormula()) {
+					ret.setRawData(this.formattedValue.getFormula());
+				} else if (type == FormattedValue.Type.NUMBER || type == FormattedValue.Type.DATE) {
 					ret.setRawData(this.formattedValue.getRawString());
 				}
 			}
@@ -1093,6 +1096,10 @@ public class ExcelToCanvasBuilder {
 				this.formattedValue.setValue(convertHtml(value));
 			}
 			return this.formattedValue.getValue();
+		}
+		
+		private boolean isFormula() {
+			return this.formattedValue != null && this.formattedValue.getFormula() != null;
 		}
 		
 		private String convertHtml(String value) {

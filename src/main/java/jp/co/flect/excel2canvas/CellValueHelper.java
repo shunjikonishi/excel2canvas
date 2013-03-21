@@ -78,6 +78,7 @@ public class CellValueHelper {
 						} else {
 							ret = getFormattedValue(cell, cachedType);
 						}
+						ret.setFormula(cell.getCellFormula());
 					}
 					if (this.cached != null) {
 						this.cached.put(key, ret);
