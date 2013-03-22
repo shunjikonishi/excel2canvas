@@ -42,6 +42,9 @@ import org.openxmlformats.schemas.drawingml.x2006.chart.STBarGrouping;
 import org.openxmlformats.schemas.drawingml.x2006.chart.STGrouping;
 import org.openxmlformats.schemas.drawingml.x2006.chart.STRadarStyle;
 
+import jp.co.flect.excel2canvas.chart.Flotr2.NameInfo;
+import jp.co.flect.excel2canvas.ExcelUtils;
+
 /**
  * ChartFactory implementation by Flotr2
  */
@@ -50,7 +53,30 @@ public class Flotr2ChartFactory implements ChartFactory {
 	private static final String NAMESPACE_A = "http://schemas.openxmlformats.org/drawingml/2006/main";
 	private static final String NAMESPACE_C = "http://schemas.openxmlformats.org/drawingml/2006/chart";
     
+    private boolean includeRawData;
+    private List<NameInfo[]> cellNames = new ArrayList<NameInfo[]>();
+    
+	public boolean isIncludeRawData() { return this.includeRawData;}
+	public void setIncludeRawData(boolean b) { this.includeRawData = b;}
+	
+	private void addNameInfo(NameInfo n) {
+		if (n == null) {
+			return;
+		}
+		NameInfo[] arr = new NameInfo[1];
+		arr[0] = n;
+		this.cellNames.add(arr);
+	}
+	
+	private void addNameInfo(NameInfo[] ns) {
+		if (ns == null || ns.length == 0) {
+			return;
+		}
+		this.cellNames.add(ns);
+	}
+	
 	public Chart createChart(XSSFWorkbook workbook, XSSFChart xc) {
+		this.cellNames.clear();
 		CTChart ctChart = xc.getCTChart();
 		if (ctChart == null) {
 			return null;
@@ -125,6 +151,8 @@ public class Flotr2ChartFactory implements ChartFactory {
 		Flotr2 ret = new Flotr2(Flotr2.Type.BUBBLE);
 		for (int i=0; i<bubbleChart.sizeOfSerArray(); i++) {
 			BubbleSeries series = new BubbleSeries(bubbleChart.getSerArray(i));
+			addNameInfo(series.getNameInfo());
+			
 			String seriesName = series.getName();
 			List<Double> xList = getValues(workbook, series.getCat());
 			List<Double> yList = getValues(workbook, series.getVal());
@@ -166,9 +194,13 @@ public class Flotr2ChartFactory implements ChartFactory {
 				}
 			}
 		}
+		if (this.includeRawData) {
+			ret.setCellNames(this.cellNames);
+		}
 	}
 	
 	private void processSeries(Flotr2 ret, XSSFWorkbook workbook, SeriesWrapper series) {
+		addNameInfo(series.getNameInfo());
 		String seriesName = series.getName();
 		if (series.isCatNumber()) {
 			List<Double> xValues = getValues(workbook, series.getCat());
@@ -227,7 +259,10 @@ public class Flotr2ChartFactory implements ChartFactory {
 			if (sheet == null) {
 				throw new Exception(strRef.getF());
 			}
+			int idx = 0;
+			NameInfo[] names = new NameInfo[cells.length];
 			for (CellReference ref : cells) {
+				names[idx++] = new NameInfo(NameInfo.TYPE_NAME, ExcelUtils.pointToName(ref.getCol(), ref.getRow()));
 				String str = null;
 				Row row = sheet.getRow(ref.getRow());
 				if (row != null) {
@@ -241,6 +276,7 @@ public class Flotr2ChartFactory implements ChartFactory {
 				}
 				ret.add(str);
 			}
+			addNameInfo(names);
 		} catch (Exception e) {
 			e.printStackTrace();
 			ret.clear();
@@ -277,7 +313,10 @@ public class Flotr2ChartFactory implements ChartFactory {
 			if (sheet == null) {
 				throw new Exception(numRef.getF());
 			}
+			int idx = 0;
+			NameInfo[] names = new NameInfo[cells.length];
 			for (CellReference ref : cells) {
+				names[idx++] = new NameInfo(NameInfo.TYPE_VALUE, ExcelUtils.pointToName(ref.getCol(), ref.getRow()));
 				double d = 0.0;
 				Row row = sheet.getRow(ref.getRow());
 				if (row != null) {
@@ -288,6 +327,7 @@ public class Flotr2ChartFactory implements ChartFactory {
 				}
 				ret.add(d);
 			}
+			addNameInfo(names);
 		} catch (Exception e) {
 			e.printStackTrace();
 			ret.clear();
@@ -332,6 +372,13 @@ public class Flotr2ChartFactory implements ChartFactory {
 		public abstract CTSerTx getTx();
 		public abstract CTAxDataSource getCat();
 		public abstract CTNumDataSource getVal();
+		
+		public NameInfo getNameInfo() {
+			if (isSetTx()) {
+				return new NameInfo(NameInfo.TYPE_TITLE, getString(getTx(), "declare namespace c='" + NAMESPACE_C + "' .//c:f"));
+			}
+			return null;
+		}
 		
 		public String getName() {
 			if (isSetTx()) {

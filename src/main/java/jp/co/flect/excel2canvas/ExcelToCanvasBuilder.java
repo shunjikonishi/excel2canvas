@@ -570,6 +570,7 @@ public class ExcelToCanvasBuilder {
 		}
 		XSSFWorkbook xWorkbook = (XSSFWorkbook)this.workbook;
 		ChartFactory factory = new Flotr2ChartFactory();
+		factory.setIncludeRawData(this.includeRawData);
 		for (int i=0; i<chartList.size(); i++) {
 			XSSFChart xChart = chartList.get(i);
 			CTTwoCellAnchor anchor = anchorList.get(i);
@@ -765,6 +766,10 @@ public class ExcelToCanvasBuilder {
 				break;
 			case CellStyle.VERTICAL_JUSTIFY:
 				buf.append("j");
+				break;
+			default:
+				//valignは未設定がありえる
+				buf.append("c");
 				break;
 		}
 		if (general) {

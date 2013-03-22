@@ -5,12 +5,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.lang.reflect.Type;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.PictureData;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonElement;
 import org.apache.commons.codec.binary.Base64;
 import jp.co.flect.excel2canvas.chart.Chart;
+import jp.co.flect.excel2canvas.chart.Flotr2;
 
 /**
  * This class is able to convert to JSON string.
@@ -108,7 +115,9 @@ public class ExcelToCanvas {
 	}
 	
 	public static ExcelToCanvas fromJson(String json) {
-		return new Gson().fromJson(json, ExcelToCanvas.class);
+		GsonBuilder builder = new GsonBuilder();
+		builder.registerTypeAdapter(Chart.class, new ChartDeserializer());
+		return builder.create().fromJson(json, ExcelToCanvas.class);
 	}
 	
 	public static class FillInfo {
@@ -307,4 +316,11 @@ public class ExcelToCanvas {
 		public int[] getPoints() { return this.p;}
 		public Chart getChart() { return this.chart;}
 	}
+	
+	private static class ChartDeserializer implements JsonDeserializer<Chart> {
+		public Chart deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+			return context.deserialize(json, Flotr2.class);
+		}
+	}
+	
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 	/**
  * Flotr Defaults
@@ -119,6 +120,9 @@ public class Flotr2 implements Chart {
 	private List<Object> data = new ArrayList<Object>();
 	private List<String> labels = null;
 	
+	private LinkedHashMap<String, String[]> cellNames = null;
+	private transient Map<String, ValueInfo>  nameMap = null;
+	
 	public Flotr2(Type type) {
 		this.type = type;
 		if (type == Type.BAR) {
@@ -161,6 +165,7 @@ public class Flotr2 implements Chart {
 		}
 		return null;
 	}
+	
 	public void addData(String seriesName, String name, double value) {
 		switch (type) {
 			case PIE:
@@ -437,5 +442,200 @@ public class Flotr2 implements Chart {
 		}
 	}
 	
+	public List<String> getCellNames() {
+		if (this.cellNames == null) {
+			return null;
+		}
+		List<String> list = new ArrayList<String>();
+		for (String[] strs : this.cellNames.values()) {
+			for (String s : strs) {
+				list.add(s);
+			}
+		}
+		return list;
+	}
+	void setCellNames(List<NameInfo[]> list) {
+		this.cellNames = new LinkedHashMap<String, String[]>();
+		int titleCnt = 0;
+		int nameCnt = 0;
+		int valCnt = 0;
+		for (NameInfo[] names : list) {
+			char c = names[0].getType();
+			int idx = 0;
+			switch (c) {
+				case NameInfo.TYPE_TITLE:
+					idx = titleCnt++;
+					break;
+				case NameInfo.TYPE_NAME:
+					idx = nameCnt++;
+					break;
+				case NameInfo.TYPE_VALUE:
+					idx = valCnt++;
+					break;
+				default:
+					throw new IllegalStateException();
+			}
+			String key = "" + c + idx;
+			String[] values = new String[names.length];
+			for (int i=0; i<names.length; i++) {
+				String name = names[i].getName();
+				int split = name.indexOf('!');
+				if (split != -1) {
+					name = name.substring(split + 1);
+				}
+				name = name.replaceAll("\\$", "");
+				values[i] = name;
+			}
+			this.cellNames.put(key, values);
+		}
+	}
+	
+	public boolean setCellValue(String name, Object value) {
+		if (this.cellNames == null) {
+			return false;
+		}
+		if (this.nameMap == null) {
+			int titleCnt = 0;
+			int nameCnt = 0;
+			int valCnt = 0;
+			this.nameMap = new HashMap<String, ValueInfo>();
+			for (Map.Entry<String, String[]> entry : this.cellNames.entrySet()) {
+				String key = entry.getKey();
+				String[] values = entry.getValue();
+				char type = key.charAt(0);
+				int sidx = Integer.parseInt(key.substring(1));
+				for (int i=0; i<values.length; i++) {
+					this.nameMap.put(values[i], new ValueInfo(type, sidx, i));
+				}
+			}
+		}
+		ValueInfo vi = this.nameMap.get(name);
+		if (vi == null) {
+			return false;
+		}
+		if (value == null) {
+			if (vi.type == NameInfo.TYPE_VALUE) {
+				value = 0.0;
+			} else {
+				value = "";
+			}
+		} 
+		switch (vi.type) {
+			case NameInfo.TYPE_TITLE:
+				if (this.data != null && vi.sIndex < this.data.size()) {
+					SeriesData d = (SeriesData)this.data.get(vi.sIndex);
+					d.label = value.toString();
+					return true;
+				}
+				break;
+			case NameInfo.TYPE_NAME:
+				if (this.type == Type.PIE) {
+					if (this.data != null && vi.sIndex < this.data.size()) {
+						PieData d = (PieData)this.data.get(vi.sIndex);
+						d.label = value.toString();
+						return true;
+					}
+				} else {
+					if (this.labels != null && vi.sIndex < this.labels.size()) {
+						this.labels.set(vi.sIndex, value.toString());
+						return true;
+					}
+				}
+				break;
+			case NameInfo.TYPE_VALUE:
+				if (this.data == null) {
+					return false;
+				}
+				if (!(value instanceof Double)) {
+					return false;
+				}
+				double dValue = (Double)value;
+				int dataIndex = vi.sIndex;
+				switch (this.type) {
+					case PIE:
+						{
+							dataIndex = vi.vIndex;
+							if (dataIndex < this.data.size()) {
+								PieData pd = (PieData)this.data.get(dataIndex);
+								pd.data[0][1] = dValue;
+								return true;
+							}
+						}
+						break;
+					case BUBBLE:
+						{
+							int mod = dataIndex % 3;
+							dataIndex = dataIndex / 3;
+							if (dataIndex < this.data.size()) {
+								BubbleData bd = (BubbleData)this.data.get(dataIndex);
+								if (bd.data != null && vi.vIndex < bd.data.size()) {
+									bd.data.get(vi.vIndex)[mod] = dValue;
+									return true;
+								}
+							}
+						}
+						break;
+					default:
+						{
+							int mod = 0;
+							if (this.labels == null || this.labels.size() == 0) {
+								dataIndex = dataIndex / 2;
+								mod = dataIndex % 2;
+							}
+							if (dataIndex < this.data.size()) {
+								SeriesData sd = (SeriesData)this.data.get(dataIndex);
+								if (sd.data != null && vi.vIndex < sd.data.size()) {
+									sd.data.get(vi.vIndex)[mod] = dValue;
+									return true;
+								}
+							}
+						}
+						break;
+				}
+				break;
+			default:
+				throw new IllegalStateException();
+		}
+		//ToDo
+		return false;
+	}
+	
+	public void clearRawData() {
+		this.cellNames = null;
+		this.nameMap = null;
+	}
+	
+	public static class NameInfo {
+		
+		public static final char TYPE_TITLE = 't';
+		public static final char TYPE_NAME  = 'n';
+		public static final char TYPE_VALUE = 'v';
+		
+		private char type;
+		private String name;
+		
+		public NameInfo(char type, String name) {
+			this.type = type;
+			this.name = name;
+		}
+		
+		public char getType() { return this.type;}
+		public String getName() { return this.name;}
+	}
+	
+	private static class ValueInfo {
+		
+		public char type;
+		public int sIndex;
+		public int vIndex;
+		
+		public ValueInfo(char type, int sidx, int vidx) {
+			this.type = type;
+			this.sIndex = sidx;
+			this.vIndex = vidx;
+		}
+		
+		public String toString() { return "" + type + sIndex + "-" + vIndex;}
+	}
 }
 
