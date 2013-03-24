@@ -1,10 +1,18 @@
 package jp.co.flect.excel2canvas.chart;
 
 import java.util.List;
+import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 
 	/**
  * Flotr Defaults
@@ -104,7 +112,7 @@ Flotr.defaultOptions = {
   }
 };
  */
-public class Flotr2 implements Chart {
+public class Flotr2 implements Chart, JsonDeserializer<Chart> {
 	
 	public enum Type {
 		PIE,
@@ -122,6 +130,10 @@ public class Flotr2 implements Chart {
 	
 	private LinkedHashMap<String, String[]> cellNames = null;
 	private transient Map<String, ValueInfo>  nameMap = null;
+	
+	public Flotr2() {
+		//For JsonDeserializer
+	}
 	
 	public Flotr2(Type type) {
 		this.type = type;
@@ -186,14 +198,17 @@ public class Flotr2 implements Chart {
 						sc = this.seriesCount;
 						offset = this.data.size();
 					}
-					boolean h = type == Type.BAR ? this.option.bars.horizontal : false;
-					target = new SeriesData(seriesName, h, sc, offset);
+					target = new SeriesData(seriesName, isHorizontal(), sc, offset);
 					this.data.add(target);
 				}
 				target.addData(value);
 				break;
 			}
 		}
+	}
+	
+	private boolean isHorizontal() {
+		return this.type == Type.BAR ? this.option.bars.horizontal : false;
 	}
 	
 	public void addData(String seriesName, double x, double y) {
@@ -508,6 +523,7 @@ public class Flotr2 implements Chart {
 					this.nameMap.put(values[i], new ValueInfo(type, sidx, i));
 				}
 			}
+//System.out.println("nameMap: " + nameMap);
 		}
 		ValueInfo vi = this.nameMap.get(name);
 		if (vi == null) {
@@ -536,8 +552,8 @@ public class Flotr2 implements Chart {
 						return true;
 					}
 				} else {
-					if (this.labels != null && vi.sIndex < this.labels.size()) {
-						this.labels.set(vi.sIndex, value.toString());
+					if (this.labels != null && vi.vIndex < this.labels.size()) {
+						this.labels.set(vi.vIndex, value.toString());
 						return true;
 					}
 				}
@@ -581,7 +597,10 @@ public class Flotr2 implements Chart {
 							if (this.labels == null || this.labels.size() == 0) {
 								dataIndex = dataIndex / 2;
 								mod = dataIndex % 2;
+							} else if (!isHorizontal()) {
+								mod = 1;
 							}
+//System.out.println("value: " + name + ", " + vi + ", " + dataIndex + ", " + mod);
 							if (dataIndex < this.data.size()) {
 								SeriesData sd = (SeriesData)this.data.get(dataIndex);
 								if (sd.data != null && vi.vIndex < sd.data.size()) {
@@ -636,6 +655,46 @@ public class Flotr2 implements Chart {
 		}
 		
 		public String toString() { return "" + type + sIndex + "-" + vIndex;}
+	}
+	
+	public Chart deserialize(JsonElement json, java.lang.reflect.Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+		JsonObject obj = json.getAsJsonObject();
+		Type type = Type.valueOf(obj.getAsJsonPrimitive("type").getAsString());
+		Flotr2 ret = new Flotr2(type);
+		if (obj.has("option")) {
+			ret.option = context.deserialize(obj.get("option"), Option.class);
+		}
+		if (obj.has("labels")) {
+			ret.labels = context.deserialize(obj.get("labels"), new TypeToken<List<String>>() {}.getType());
+		}
+		if (obj.has("cellNames")) {
+			ret.cellNames = context.deserialize(obj.get("cellNames"), new TypeToken<LinkedHashMap<String, String[]>>() {}.getType());
+		}
+		if (obj.has("data")) {
+			JsonArray array = obj.getAsJsonArray("data");
+			Iterator<JsonElement> it = array.iterator();
+			while (it.hasNext()) {
+				JsonElement data = it.next();
+				Object value = null;
+				switch (type) {
+					case PIE:
+						value = context.deserialize(data, PieData.class);
+						break;
+					case BUBBLE:
+						value = context.deserialize(data, BubbleData.class);
+						break;
+					case BAR:
+					case LINE:
+					case RADAR:
+						value = context.deserialize(data, SeriesData.class);
+						break;
+					default:
+						throw new IllegalStateException();
+				}
+				ret.data.add(value);
+			}
+		}
+		return ret;
 	}
 }
 

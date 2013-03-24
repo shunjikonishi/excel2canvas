@@ -59,6 +59,8 @@ public class Flotr2ChartFactory implements ChartFactory {
 	public boolean isIncludeRawData() { return this.includeRawData;}
 	public void setIncludeRawData(boolean b) { this.includeRawData = b;}
 	
+	public String getChartName() { return "Flotr2";}
+	
 	private void addNameInfo(NameInfo n) {
 		if (n == null) {
 			return;
@@ -100,6 +102,7 @@ public class Flotr2ChartFactory implements ChartFactory {
 		if (plotArea.sizeOfBubbleChartArray() > 0) {
 			return createBubbleChart(workbook, ctChart, plotArea.getBubbleChartArray(0));
 		}
+System.out.println(plotArea);
 		return null;
 	}
 	

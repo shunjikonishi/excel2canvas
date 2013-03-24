@@ -88,6 +88,8 @@ public class ExcelToCanvasBuilder {
 	private ExpandChecker expandChecker = null;
 	private Set<String> includeCells = null;
 	
+	private ChartFactory chartFactory = null;
+	
 	public ExcelToCanvasBuilder() {
 		this(Locale.getDefault());
 	}
@@ -174,6 +176,9 @@ public class ExcelToCanvasBuilder {
 	
 	public int getReadMaxCol() { return this.readMaxCol;}
 	public void setReadMaxCol(int n) { this.readMaxCol = n;}
+	
+	public ChartFactory getChartFactory() { return this.chartFactory;}
+	public void setChartFactory(ChartFactory f) { this.chartFactory = f;}
 	
 	public String getReadRange() { 
 		if (this.readRange == null) {
@@ -569,7 +574,11 @@ public class ExcelToCanvasBuilder {
 			throw new IllegalStateException();
 		}
 		XSSFWorkbook xWorkbook = (XSSFWorkbook)this.workbook;
-		ChartFactory factory = new Flotr2ChartFactory();
+		ChartFactory factory = getChartFactory();
+		if (factory == null) {
+			factory = new Flotr2ChartFactory();
+			setChartFactory(factory);
+		}
 		factory.setIncludeRawData(this.includeRawData);
 		for (int i=0; i<chartList.size(); i++) {
 			XSSFChart xChart = chartList.get(i);

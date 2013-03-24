@@ -89,4 +89,20 @@ Followings are some of its samples.(Japanese only)
 - [The result of a baseball game](http://excelnote.herokuapp.com/share/note/s91/e94bd16f-465a-4a24-b71e-dff906cf3395/67079ce23db9c8af6df06b33d12c8e70?theme=sunny)
 - [Purchase order](https://excelnote.herokuapp.com/share/excel/s91/09880d80-43bd-4728-9f8f-300b84a3a32c/151561d3185ea4c1dc7fa3ab3f2db653?sheet=%E7%99%BA%E6%B3%A8%E6%9B%B8&theme=redmond)  
   It is able to print as is from web browser.
-  
+
+License
+-------
+MIT
+
+Notice
+------
+This library is not released yet.
+This means
+
+- The method signature of API might be changed.
+- The JSON format might be changed.
+- The chart library might be changed from Flotr2 to any other.
+- Or any other refactoring will be possible.
+
+But the same revision of Java classes and Javascript will always work together.
+

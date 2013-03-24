@@ -8,6 +8,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  */
 public interface ChartFactory {
 	
+	public String getChartName();
 	public Chart createChart(XSSFWorkbook workbook, XSSFChart chart);
 	public boolean isIncludeRawData();
 	public void setIncludeRawData(boolean b);
