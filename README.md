@@ -72,9 +72,13 @@ Supported Excel features
     
 Dependencies
 ------------
-The java library is highly dependent on [Apache POI](http://poi.apache.org/)  
-The javascript library is a [jQuery](http://jquery.com/) plugin  
-If you want to display chart, you must include [Flotr2](http://humblesoftware.com/flotr2/)  
+The java library is highly dependent on [Apache POI](http://poi.apache.org/) and other apache libraries.  
+And includes [Google gson](https://code.google.com/p/google-gson/) to parse JSON string.
+
+
+The javascript library is implemented as a [jQuery](http://jquery.com/) plugin.  
+If you want to display chart, you must include [Flotr2](http://humblesoftware.com/flotr2/).  
+If you want to display comment, you must include [Bootstrap](http://twitter.github.com/bootstrap/).  
 
 Samples
 -------
@@ -96,7 +100,7 @@ MIT
 
 Notice
 ------
-This library is not released yet.
+This library is not released yet.  
 This means
 
 - The method signature of API might be changed.
