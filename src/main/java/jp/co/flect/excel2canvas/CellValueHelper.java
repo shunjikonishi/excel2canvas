@@ -1,8 +1,10 @@
 package jp.co.flect.excel2canvas;
 
+import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
+import java.text.SimpleDateFormat;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -13,9 +15,16 @@ import org.apache.poi.ss.formula.eval.NotImplementedException;
  */
 public class CellValueHelper {
 	
+	private static final String[] DATE_FORMATS = {
+		"yyyy-MM-dd",
+		"yyyy-MM-dd HH:mm:ss",
+		"HH:mm:ss"
+	};
+	
 	private FormulaEvaluator evaluator;
 	private DataFormatterEx dataFormatter;
 	private HashMap<String, FormattedValue> cached = null;
+	private SimpleDateFormat[] dateFormats = null;
 	
 	public CellValueHelper(Workbook workbook, boolean cache) {
 		this(workbook, cache, Locale.getDefault());
@@ -27,6 +36,18 @@ public class CellValueHelper {
 		if (cache) {
 			this.cached = new HashMap<String, FormattedValue>();
 		}
+	}
+	
+	private SimpleDateFormat getDateFormat(int idx) {
+		if (this.dateFormats == null) {
+			this.dateFormats = new SimpleDateFormat[DATE_FORMATS.length];
+		}
+		SimpleDateFormat ret = this.dateFormats[idx];
+		if (ret == null) {
+			ret = new SimpleDateFormat(DATE_FORMATS[idx]);
+			this.dateFormats[idx] = ret;
+		}
+		return ret;
 	}
 	
 	public void clearCache() {
@@ -94,4 +115,43 @@ public class CellValueHelper {
 		}
 		throw new IllegalStateException();
 	}
+	
+	public void setString(Cell cell, String value) {
+		if (value == null || value.length() == 0) {
+			cell.setCellValue("");
+			return;
+		}
+		char firstChar = value.charAt(0);
+		if (firstChar == '-' || firstChar == '.' || (firstChar >= '0' && firstChar <= '9')) {
+			try {
+				cell.setCellValue(Double.parseDouble(value));
+				return;
+			} catch (Exception e) {
+				//ignore
+			}
+			if (firstChar >= '0' && firstChar <= '9') {
+				for (int i=0; i<DATE_FORMATS.length; i++) {
+					SimpleDateFormat fmt = getDateFormat(i);
+					try {
+						Date d = fmt.parse(value);
+						cell.setCellValue(d);
+						return;
+					} catch (Exception e) {
+						//ignore
+					}
+				}
+			}
+		} else if (firstChar == 't' && value.equals("true")) {
+			cell.setCellValue(true);
+			return;
+		} else if (firstChar == 'f' && value.equals("false")) {
+			cell.setCellValue(false);
+			return;
+		} else if (firstChar == '=') {
+			cell.setCellFormula(value);
+			return;
+		}
+		cell.setCellValue(value);
+	}
+	
 }
