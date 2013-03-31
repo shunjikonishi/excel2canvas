@@ -28,6 +28,10 @@ public class ExcelToCanvas {
 	private List<StrInfo> strs = new ArrayList<StrInfo>();
 	private List<PictureInfo> pictures = new ArrayList<PictureInfo>();
 	private List<ChartInfo> charts = new ArrayList<ChartInfo>();
+	
+	private transient int styleIndex = 0;
+	private Map<String, String> styles = new HashMap<String, String>();
+	
 	private transient Map<String, StrInfo> strMap = null;
 	
 	public int getWidth() { return this.width;}
@@ -37,10 +41,18 @@ public class ExcelToCanvas {
 	public void setHeight(int n) { this.height = n;}
 	
 	public void addLineInfo(LineInfo l) { this.lines.add(l);}
-	public void addFillInfo(FillInfo f) { this.fills.add(f);}
-	public void addStrInfo(StrInfo s) { this.strs.add(s);}
 	public void addPictureInfo(PictureInfo p) { this.pictures.add(p);}
 	public void addChartInfo(ChartInfo p) { this.charts.add(p);}
+	
+	public void addFillInfo(FillInfo f) { 
+		this.fills.add(f);
+		f.setParent(this);
+	}
+	
+	public void addStrInfo(StrInfo s) { 
+		this.strs.add(s);
+		s.setParent(this);
+	}
 	
 	public List<LineInfo> getLines() { return this.lines;}
 	public void setLines(List<LineInfo> list) { this.lines = list;}
@@ -78,6 +90,19 @@ public class ExcelToCanvas {
 		this.strMap = null;
 	}
 	
+	private String addStyle(String str) {
+		for (Map.Entry<String, String> entry : this.styles.entrySet()) {
+			if (entry.getValue().equals(str)) {
+				return entry.getKey();
+			}
+		}
+		String key = "s" + (++styleIndex);
+		styles.put(key, str);
+		return key;
+	}
+	
+	private String getStyle(String key) { return this.styles.get(key);}
+	
 	//package local constructor
 	ExcelToCanvas() {}
 	
@@ -113,15 +138,29 @@ public class ExcelToCanvas {
 	public static ExcelToCanvas fromJson(String json) {
 		GsonBuilder builder = new GsonBuilder();
 		builder.registerTypeAdapter(Chart.class, new Flotr2());
-		return builder.create().fromJson(json, ExcelToCanvas.class);
+		ExcelToCanvas excel = builder.create().fromJson(json, ExcelToCanvas.class);
+		if (excel.fills != null) {
+			for (FillInfo f : excel.fills) {
+				f.parent = excel;
+			}
+		}
+		if (excel.strs != null) {
+			for (StrInfo s : excel.strs) {
+				s.parent = excel;
+			}
+		}
+		return excel;
 	}
 	
 	public static class FillInfo {
 		
+		private transient ExcelToCanvas parent = null;
+		
 		private int[] p;
-		private String back;
-		private String fore;
-		private Integer pattern;
+		private /* transient */ String back;//for compatibility
+		private /* transient */ String fore;//for compatibility
+		private /* transient */ Integer pattern;//for compatibility
+		private String styleRef;
 		
 		public FillInfo(int sx, int sy, int ex, int ey, String back, String fore, int pattern) {
 			this.p = new int[4];
@@ -136,10 +175,44 @@ public class ExcelToCanvas {
 			}
 		}
 		
+		private void setParent(ExcelToCanvas excel) {
+			this.parent = excel;
+			
+			StringBuilder buf = new StringBuilder();
+			if (this.back != null) {
+				buf.append(this.back);
+			}
+			buf.append("|");
+			if (this.fore != null) {
+				buf.append(this.fore);
+			}
+			buf.append("|");
+			if (this.pattern != null) {
+				buf.append(this.pattern);
+			}
+			this.styleRef = excel.addStyle(buf.toString());
+			this.back = null;
+			this.fore = null;
+			this.pattern = null;
+		}
+		
 		public int[] getPoints() { return this.p;}
-		public String getBackground() { return this.back;}
-		public String getForeground() { return this.fore;}
-		public int getPattern() { return this.pattern == null ? 0 : this.pattern.intValue();}
+		public String getBackground() { return this.parent == null ? this.back : getRef(0);}
+		public String getForeground() { return this.parent == null ? this.fore : getRef(1);}
+		public int getPattern() { 
+			if (this.parent == null) {
+				return this.pattern == null ? 0 : this.pattern.intValue();
+			} else {
+				String ref = getRef(2);
+				return ref == null ? 0 : Integer.parseInt(ref);
+			}
+		}
+		
+		private String getRef(int idx) {
+			String style = this.parent.getStyle(this.styleRef);
+			String ret = style.split("|")[idx];
+			return ret == null || ret.length() == 0 ? null : ret;
+		}
 		
 	}
 	
@@ -165,15 +238,18 @@ public class ExcelToCanvas {
 	
 	public static class StrInfo {
 		
+		private transient ExcelToCanvas parent = null;
+		
 		private int[] p;
 		private String id;
 		private String text;
 		private String align;
-		private String style;
+		private String styleRef;
 		private String link;
 		private Boolean formula;
 		private String rawdata;
 		private String comment;
+		private /* transient */ String style;//for compatibility
 		private Integer commentWidth;
 		private transient Map<String, String> styleMap;
 		private String clazz;
@@ -199,14 +275,12 @@ public class ExcelToCanvas {
 		public String getText() { return this.text;}
 		
 		public String getAlign() { return this.align;}
-		public String getStyle() { return this.style;}
 		public String getLink() { return this.link;}
 		public String getComment() { return this.comment;}
 		public int getCommentWidth() { return this.commentWidth != null ? this.commentWidth.intValue() : 0;}
 		public boolean isFormula() { return this.formula != null && this.formula.booleanValue();}
 		public void setFormula(boolean b) { this.formula = b ? Boolean.TRUE : null;}
 		
-		public Map<String, String> getStyleMap() { return this.styleMap;}
 		
 		public String getRawData() { return this.rawdata;}
 		public void setRawData(String s) { this.rawdata = s;}
@@ -257,12 +331,35 @@ public class ExcelToCanvas {
 			return true;
 		}
 		
+		private void setParent(ExcelToCanvas excel) {
+			this.parent = excel;
+			this.styleRef = excel.addStyle(this.style);
+			this.style = null;
+		}
+		
+		public String getStyle() {
+			if (this.parent != null && this.styleRef != null) {
+				return this.parent.getStyle(this.styleRef);
+			} else {
+				return this.style;
+			}
+		} 
+		
+		private void setStyle(String s) {
+			if (this.parent == null) {
+				this.style = s;
+			} else {
+				this.styleRef = this.parent.addStyle(s);
+			}
+		}
+		
+		public Map<String, String> getStyleMap() { return this.styleMap;}
 		public void resetStyle(String name, String value) {
 			if (this.styleMap == null) {
-				this.styleMap = styleToMap(this.style);
+				this.styleMap = styleToMap(getStyle());
 			}
 			this.styleMap.put(name, value);
-			this.style = mapToStyle(this.styleMap);
+			setStyle(mapToStyle(this.styleMap));
 		}
 	}
 	

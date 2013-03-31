@@ -62,6 +62,7 @@ public class ExcelToCanvasBuilder {
 	}
 	
 	private Locale locale;
+	private FontManager fontManager = new FontManager();
 	
 	private Workbook workbook;
 	private Sheet sheet;
@@ -179,6 +180,9 @@ public class ExcelToCanvasBuilder {
 	
 	public ChartFactory getChartFactory() { return this.chartFactory;}
 	public void setChartFactory(ChartFactory f) { this.chartFactory = f;}
+	
+	public FontManager getFontManager() { return this.fontManager;}
+	public void setFontManager(FontManager m) { this.fontManager = m;}
 	
 	public String getReadRange() { 
 		if (this.readRange == null) {
@@ -982,7 +986,7 @@ public class ExcelToCanvasBuilder {
 					styleMap.put("text-wrap", "none");
 				}
 				Font font = workbook.getFontAt(style.getFontIndex());
-				styleMap.put("font-family", font.getFontName());
+				styleMap.put("font-family", fontManager.getFontFamily(font.getFontName()));
 				styleMap.put("font-size", font.getFontHeightInPoints() + "pt");
 				String color = FormattedValue.getColorString(exColor.getFontColor(font));
 				if (this.formattedValue != null && this.formattedValue.getColor() != null) {

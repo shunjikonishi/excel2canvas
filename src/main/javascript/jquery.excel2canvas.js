@@ -15,15 +15,34 @@
 		BORDER_SLANTED_DASH_DOT    = 13;
 	
 	var context;
-	function fillStyle(fill) {
-		if (fill.fore) {
-			context.fillStyle = fill.fore;
+	function isTooltipIsBootstrap() {
+		return $.fn.tooltip && $.fn.tooltip.defaults
+	}
+	function fillStyle(data, fill) {
+		var back = fill.back;
+		var fore = fill.fore;
+		var pattern = fill.pattern;
+		if (fill.styleRef) {
+			var styles = data.styles[fill.styleRef].split("|");
+			back = styles[0];
+			fore = styles[1];
+			pattern = styles[2];
+		}
+		//ToDo back, pattern
+		if (fore) {
+			context.fillStyle = fore;
 			context.fillRect(fill.p[0], fill.p[1], fill.p[2], fill.p[3]);
 		}
 	}
 	function drawLine(line) {
 		var kind = line.kind ? line.kind : 1;
 		var w = 1;
+		var x1 = line.p[0];
+		var y1 = line.p[1];
+		var x2 = line.p[2];
+		var y2 = line.p[3];
+		var horizontal = y1 == y2;
+		
 		if (kind == BORDER_MEDIUM || 
 		    kind == BORDER_MEDIUM_DASHED || 
 		    kind == BORDER_MEDIUM_DASH_DOT ||
@@ -34,10 +53,22 @@
 			w = 3;
 		}
 		context.lineWidth = w;
-		var horizontal = line.p[1] == line.p[3];
-		var pad = 0;
 		if (w == 1 || w == 3) {
-			pad = - 0.5;
+			if (horizontal) {
+				y1 = y1 == 0 ? 0.5 : y1 - 0.5;
+				y2 = y2 == 0 ? 0.5 : y2 - 0.5;
+			} else {
+				x1 = x1 == 0 ? 0.5 : x1 - 0.5;
+				x2 = x2 == 0 ? 0.5 : x2 - 0.5;
+			}
+		} else {//w == 2
+			if (horizontal && y1 == 0) {
+				y1 = 1;
+				y2 = 1;
+			} else if (!horizontal && x1 == 0) {
+				x1 = 1;
+				x2 = 1;
+			}
 		}
 		if (line.color) {
 			context.strokeStyle = line.color;
@@ -47,15 +78,15 @@
 		if (kind == BORDER_DOUBLE) {
 			context.beginPath();
 			if (horizontal) {
-				context.moveTo(line.p[0], line.p[1] - 1 + pad);
-				context.lineTo(line.p[2], line.p[3] - 1 + pad);
-				context.moveTo(line.p[0], line.p[1] + 2 + pad);
-				context.lineTo(line.p[2], line.p[3] + 2 + pad);
+				context.moveTo(x1, y1 - 1);
+				context.lineTo(x2, y2 - 1);
+				context.moveTo(x1, y1 + 1);
+				context.lineTo(x2, y2 + 1);
 			} else {
-				context.moveTo(line.p[0] - 1 + pad, line.p[1]);
-				context.lineTo(line.p[2] - 1 + pad, line.p[3]);
-				context.moveTo(line.p[0] + 2 + pad, line.p[1]);
-				context.lineTo(line.p[2] + 2 + pad, line.p[3]);
+				context.moveTo(x1 - 1, y1);
+				context.lineTo(x2 - 1, y2);
+				context.moveTo(x1 + 1, y1);
+				context.lineTo(x2 + 1, y2);
 			}
 			context.stroke();
 			context.closePath();
@@ -82,11 +113,11 @@
 			
 			var bar = true;
 			context.beginPath();
-			context.moveTo(line.p[0], line.p[1]);
+			context.moveTo(x1, y1);
 			if (horizontal) {
-				var y = line.p[1];
-				var cx = line.p[0];
-				var ex = line.p[2];
+				var y = y1;
+				var cx = x1;
+				var ex = x2;
 				while (cx < ex) {
 					var nx = bar ? bw : sw;
 					cx += nx;
@@ -94,16 +125,16 @@
 						cx = ex;
 					}
 					if (bar) {
-						context.lineTo(cx, y + pad);
+						context.lineTo(cx, y);
 					} else {
-						context.moveTo(cx, y + pad);
+						context.moveTo(cx, y);
 					}
 					bar = !bar;
 				}
 			} else {
-				var x = line.p[0];
-				var cy = line.p[1];
-				var ey = line.p[3];
+				var x = x1;
+				var cy = y1;
+				var ey = y2;
 				while (cy < ey) {
 					var ny = bar ? bw : sw;
 					cy += ny;
@@ -111,9 +142,9 @@
 						cy = ey;
 					}
 					if (bar) {
-						context.lineTo(x + pad, cy);
+						context.lineTo(x, cy);
 					} else {
-						context.moveTo(x + pad, cy);
+						context.moveTo(x, cy);
 					}
 					bar = !bar;
 				}
@@ -121,11 +152,9 @@
 			context.stroke();
 			context.closePath();
 		} else {
-			var xpad = horizontal ? 0 : line.p[0] == 0 ? -pad : pad;
-			var ypad = horizontal ? line.p[1] == 0 ? -pad : pad : 0;
 			context.beginPath();
-			context.moveTo(line.p[0] + xpad, line.p[1] + ypad);
-			context.lineTo(line.p[2] + xpad, line.p[3] + ypad);
+			context.moveTo(x1, y1);
+			context.lineTo(x2, y2);
 			context.stroke();
 			context.closePath();
 		}
@@ -154,7 +183,7 @@
 		if (data.fills) {
 			for (var i=0; i<data.fills.length; i++) {
 				var fill = data.fills[i];
-				fillStyle(fill);
+				fillStyle(data, fill);
 			}
 		}
 		if (data.lines) {
@@ -167,7 +196,8 @@
 		if (data.strs) {
 			for (var i=0; i<data.strs.length; i++) {
 				var str = data.strs[i];
-				var span = $("<span id='" + str.id + "' style='" + str.style + "'></span>");
+				var style = str.style ? str.style : data.styles[str.styleRef];
+				var span = $("<span id='" + str.id + "' style='" + style + "'></span>");
 				if (str.link) {
 					var link = $("<a target='_blank'></a>");
 					link.append(str.text);
@@ -197,7 +227,10 @@
 					"width" : str.p[2],
 					"height" : str.p[3]
 				});
-				if (str.comment && $.fn.tooltip) {
+				if (str.clazz) {
+					div.addClass(str.clazz);
+				}
+				if (str.comment && isTooltipIsBootstrap()) {
 					context.strokeStyle = "red";
 					context.fillStyle = "red";
 					
@@ -212,10 +245,12 @@
 					div.tooltip({
 						"title" : str.comment
 					});
+					/*
 					div.data("tooltip").tip().find(".tooltip-inner").css({
 						"font-size" : "12px",
 						"text-align" : "left"
 					});
+					*/
 				}
 				holder.append(div);
 			}
