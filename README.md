@@ -13,7 +13,7 @@ Its source codes consists of two parts.
 
 Usage
 -----
-At first, read a excel file and convert it to JSON string.
+At first, read an excel file and convert it to JSON string.
 
     ExcelToCanvasBuilder builder = new ExcelToCanvasBuilder();
     builder.setIncludeComment(true);//If need display comments.
@@ -45,7 +45,7 @@ Supported Excel features
 ------------------------
 * Background color
     * Simple color is supported.
-    * Pattern and graduation are not.
+    * Patterns and graduations are not.
 * Lines
     * Simple line, Double line, and Dash line are supported.
     * Not supported lines are drawn as simple line.
@@ -53,7 +53,7 @@ Supported Excel features
     * png and jpeg are supported.
     * All of decorations are not supported.(e.g. border, rotation)
 * String
-    * Font : Depends on browser.
+    * Font : Depends on browser and OS font.
     * Format ： Except localized format.(Starts with "*")
     * Horizontal alignment： Left, Right, Center
     * Vertica alignmentl：Top, Bottom, Middle
@@ -67,7 +67,7 @@ Supported Excel features
 * Chart
     * Partial support.
     * xlsx only
-    * Support bar chart, pie chart, and line chart.
+    * Support bar chart, pie chart, line chart, and radar chart.
     * Properties are not considered.(e.g. Colors, marks of line chart, position of legend)
     
 Dependencies

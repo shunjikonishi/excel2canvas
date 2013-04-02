@@ -12,16 +12,16 @@
 		BORDER_MEDIUM_DASH_DOT     = 10,
 		BORDER_DASH_DOT_DOT        = 11,
 		BORDER_MEDIUM_DASH_DOT_DOT = 12,
-		BORDER_SLANTED_DASH_DOT    = 13;
+		BORDER_SLANTED_DASH_DOT    = 13,
+		context;
 	
-	var context;
 	function isTooltipIsBootstrap() {
 		return $.fn.tooltip && $.fn.tooltip.defaults
 	}
 	function fillStyle(data, fill) {
-		var back = fill.back;
-		var fore = fill.fore;
-		var pattern = fill.pattern;
+		var back = fill.back,
+			fore = fill.fore,
+			pattern = fill.pattern;
 		if (fill.styleRef) {
 			var styles = data.styles[fill.styleRef].split("|");
 			back = styles[0];
@@ -35,13 +35,13 @@
 		}
 	}
 	function drawLine(line) {
-		var kind = line.kind ? line.kind : 1;
-		var w = 1;
-		var x1 = line.p[0];
-		var y1 = line.p[1];
-		var x2 = line.p[2];
-		var y2 = line.p[3];
-		var horizontal = y1 == y2;
+		var kind = line.kind ? line.kind : 1,
+			w = 1,
+			x1 = line.p[0],
+			y1 = line.p[1],
+			x2 = line.p[2],
+			y2 = line.p[3],
+			horizontal = y1 == y2;
 		
 		if (kind == BORDER_MEDIUM || 
 		    kind == BORDER_MEDIUM_DASHED || 
@@ -115,9 +115,9 @@
 			context.beginPath();
 			context.moveTo(x1, y1);
 			if (horizontal) {
-				var y = y1;
-				var cx = x1;
-				var ex = x2;
+				var y = y1,
+					cx = x1,
+					ex = x2;
 				while (cx < ex) {
 					var nx = bar ? bw : sw;
 					cx += nx;
@@ -132,9 +132,9 @@
 					bar = !bar;
 				}
 			} else {
-				var x = x1;
-				var cy = y1;
-				var ey = y2;
+				var x = x1,
+					cy = y1,
+					ey = y2;
 				while (cy < ey) {
 					var ny = bar ? bw : sw;
 					cy += ny;
@@ -195,9 +195,9 @@
 		
 		if (data.strs) {
 			for (var i=0; i<data.strs.length; i++) {
-				var str = data.strs[i];
-				var style = str.style ? str.style : data.styles[str.styleRef];
-				var span = $("<span id='" + str.id + "' style='" + style + "'></span>");
+				var str = data.strs[i],
+					style = str.style ? str.style : data.styles[str.styleRef],
+					span = $("<span id='" + str.id + "' style='" + style + "'></span>");
 				if (str.link) {
 					var link = $("<a target='_blank'></a>");
 					link.append(str.text);
@@ -258,8 +258,8 @@
 		
 		if (data.pictures) {
 			for (var i=0; i<data.pictures.length; i++) {
-				var pic = data.pictures[i];
-				var img = $("<img class='excel-img'/>");
+				var pic = data.pictures[i],
+					img = $("<img class='excel-img'/>");
 				img.attr("src", pic.uri);
 				img.css({
 					"left" : pic.p[0],
@@ -272,8 +272,8 @@
 		}
 		if (data.charts && typeof(Flotr) === "object") {
 			for (var i=0; i<data.charts.length; i++) {
-				var chart = data.charts[i];
-				var chartDiv = $("<div class='excel-chart'></div>");
+				var chart = data.charts[i],
+					chartDiv = $("<div class='excel-chart'></div>");
 				chartDiv.css({
 					"left" : chart.p[0],
 					"top" : chart.p[1],
@@ -303,9 +303,9 @@
 	}
 	$.fn.excelToChart = function(chart) {
 		function buildChartOption() {
-			var type = chart.type;
-			var option = chart.option;
-			var base = {}
+			var type = chart.type,
+				option = chart.option,
+				base = {}
 			switch (type) {
 				case "PIE":
 					base = {
@@ -420,8 +420,8 @@
 					break;
 			}
 			if (chart.labels && chart.labels.length) {
-				var ticks = [];
-				var len = chart.data.length + 1;
+				var ticks = [],
+					len = chart.data.length + 1;
 				for (var i=0; i<chart.labels.length; i++) {
 					var n = i+1;
 					if (type == "BAR" && option.bars.stacked == false) {
@@ -438,8 +438,8 @@
 			}
 			return $.extend(true, base, option);
 		}
-		var chartData = chart.data;
-		var chartOption = buildChartOption(chart);
+		var chartData = chart.data,
+			chartOption = buildChartOption(chart);
 		Flotr.draw($(this)[0], chartData, chartOption);
 	}
 })(jQuery);
