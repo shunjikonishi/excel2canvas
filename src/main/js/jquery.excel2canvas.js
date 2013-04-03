@@ -159,7 +159,7 @@
 			context.closePath();
 		}
 	}
-	$.fn.excelToCanvas = function(data, convertImg) {
+	$.fn.excelToCanvas = function(data, mergeData) {
 		var holder, canvas;
 		if (this[0].tagName == "canvas") {
 			canvas = this;
@@ -197,7 +197,7 @@
 			for (var i=0; i<data.strs.length; i++) {
 				var str = data.strs[i],
 					style = str.style ? str.style : data.styles[str.styleRef],
-					span = $("<span id='" + str.id + "' style='" + style + "'></span>");
+					span = $("<span style='" + style + "'></span>");
 				if (str.link) {
 					var link = $("<a target='_blank'></a>");
 					link.append(str.text);
@@ -220,7 +220,7 @@
 				if (str.rawdata) {
 					span.attr("data-raw", str.rawdata);
 				}
-				var div = $("<div class='cell'></div>").append(span);
+				var div = $("<div id='" + str.id + "' class='cell'></div>").append(span);
 				div.css({
 					"left" : str.p[0],
 					"top" : str.p[1],
@@ -270,7 +270,7 @@
 				holder.append(img);
 			}
 		}
-		if (data.charts && typeof(Flotr) === "object") {
+		if (data.charts && $.fn.excelToChart) {
 			for (var i=0; i<data.charts.length; i++) {
 				var chart = data.charts[i],
 					chartDiv = $("<div class='excel-chart'></div>");
@@ -285,161 +285,25 @@
 				chartDiv.css("position", "absolute");
 			}
 		}
-		if (convertImg && typeof FlashCanvas === "undefined") {
-			var img = $("<img/>");
-			img.css({
-				"position" : "absolute",
-				"left" : 0,
-				"top" : 0,
-				"z-index" : 0,
-				"width" : canvas.attr("width"),
-				"height" : canvas.attr("height")
-			});
-			img.attr("src", canvas[0].toDataURL());
-			holder.append(img);
-			canvas.remove();
+		if (mergeData) {
+			for (var key in mergeData) {
+				var div = $("#" + key);
+				if (div.length > 0) {
+					var userData = mergeData[key];
+					if (typeof (userData) === "string") {
+						div.find("span").text(userData);
+					} else if (userData.element) {
+						var el = $(document.createElement(userData.element));
+						for (attr in userData) {
+							if (attr != "element") {
+								el.attr(attr, userData[attr]);
+							}
+						}
+						div.empty().append(el);
+					}
+				}
+			}
 		}
 		return this;
-	}
-	$.fn.excelToChart = function(chart) {
-		function buildChartOption() {
-			var type = chart.type,
-				option = chart.option,
-				base = {}
-			switch (type) {
-				case "PIE":
-					base = {
-						"HtmlText" : false,
-						"grid" : {
-							"verticalLines" : false,
-							"horizontalLines" : false
-						},
-						"xaxis" : { 
-							"showLabels" : false 
-						},
-						"yaxis" : {
-							"showLabels" : false 
-						},
-						"pie" : {
-							"show" : true, 
-							"fill" : true,
-							"fillColor": null,
-							"fillOpacity": 0.5,
-							"explode" : 0,
-							"startAngle" : 0.75
-						},
-						"legend" : {
-							position : "se",
-							backgroundColor : "#D2E8FF"
-						}
-					};
-					break;
-				case "BAR":
-					var horizontal = option.bars.horizontal;
-					base = {
-						"HtmlText" : false,
-						"bars" : {
-							"show" : true,
-							"horizontal" : false,
-							"shadowSize" : 0,
-							"barWidth" : 0.5
-						},
-						"xaxis" : {
-							"min" : 0
-						},
-						"yaxis" : {
-							"min" : 0
-						},
-						"grid" : {
-							"verticalLines" : horizontal,
-							"horizontalLines" : !horizontal
-						},
-						"legend" : {
-							position : horizontal ? "se" : "nw",
-							backgroundColor : "#D2E8FF"
-						}
-					};
-					break;
-				case "LINE":
-					base = {
-						"HtmlText" : false,
-						"xaxis" : {
-							"min" : 0,
-							"max" : chart.labels.length + 1
-						},
-						"yaxis" : {
-							"min" : 0
-						},
-						"legend" : {
-							position : "nw",
-							backgroundColor : "#D2E8FF"
-						}
-					};
-					break;
-				case "RADAR":
-					base = {
-						"HtmlText" : false,
-						"radar" : {
-							"show" : true,
-							"fill" : false
-						},
-						"grid" : {
-							"circular" : true,
-							"minorHorizontalLines" : true,
-							"tickColor" : "#999999"
-						},
-						"xaxis" : {
-						},
-						"yaxis" : {
-							"min" : 0,
-							"minorTickFreq" : 2
-						},
-						"legend" : {
-							position : "nw",
-							backgroundColor : "#D2E8FF"
-						}
-					};
-					break;
-				case "BUBBLE":
-					base = {
-						"HtmlText" : false,
-						"bubbles" : {
-							"show" : true
-						},
-						"xaxis" : {
-							"min" : 0
-						},
-						"yaxis" : {
-							"min" : 0
-						},
-						"legend" : {
-							position : "nw",
-							backgroundColor : "#D2E8FF"
-						}
-					};
-					break;
-			}
-			if (chart.labels && chart.labels.length) {
-				var ticks = [],
-					len = chart.data.length + 1;
-				for (var i=0; i<chart.labels.length; i++) {
-					var n = i+1;
-					if (type == "BAR" && option.bars.stacked == false) {
-						n = (i * len) + (len / 2);
-					}
-					var tick = [n, chart.labels[i]];
-					ticks.push(tick);
-				}
-				if (horizontal) {
-					base.yaxis.ticks = ticks;
-				} else {
-					base.xaxis.ticks = ticks;
-				}
-			}
-			return $.extend(true, base, option);
-		}
-		var chartData = chart.data,
-			chartOption = buildChartOption(chart);
-		Flotr.draw($(this)[0], chartData, chartOption);
 	}
 })(jQuery);
