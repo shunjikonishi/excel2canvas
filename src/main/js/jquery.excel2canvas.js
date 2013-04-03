@@ -299,7 +299,7 @@
 								el.attr(attr, userData[attr]);
 							}
 						}
-						div.empty().append(el);
+						div.css("overflow", "visible").empty().append(el);
 					}
 				}
 			}
