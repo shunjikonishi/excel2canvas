@@ -86,6 +86,7 @@ public class ExcelToCanvasBuilder {
 	private boolean includeRawData = false;
 	private boolean includeComment = false;
 	private boolean includeChart = false;
+	private boolean includePicture = false;
 	private ExpandChecker expandChecker = null;
 	private Set<String> includeCells = null;
 	
@@ -168,6 +169,9 @@ public class ExcelToCanvasBuilder {
 	
 	public boolean isIncludeChart() { return this.includeChart;}
 	public void setIncludeChart(boolean b) { this.includeChart = b;}
+	
+	public boolean isIncludePicture() { return this.includePicture;}
+	public void setIncludePicture(boolean b) { this.includePicture = b;}
 	
 	public ExpandChecker getExpandChecker() { return this.expandChecker;}
 	public void setExpandChecker(ExpandChecker c) { this.expandChecker = c;}
@@ -358,7 +362,9 @@ public class ExcelToCanvasBuilder {
 		}
 		buildHorizontalLines(ret, startRow, this.maxRow, startCol, maxCol);
 		buildVerticalLines(ret, startRow, this.maxRow, startCol, maxCol);
-		buildPictures(ret);
+		if (this.includePicture) {
+			buildPictures(ret);
+		}
 		if (this.includeChart) {
 			buildCharts(ret);
 		}

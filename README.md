@@ -18,7 +18,8 @@ At first, read an excel file and convert it to JSON string.
     ExcelToCanvasBuilder builder = new ExcelToCanvasBuilder();
     builder.setIncludeComment(true);//If need display comments.
     builder.setIncludeChart(true);//If need display charts.(Flotr2 is required.)
-    String json = builder.build(new File("Book1.xlsx"), "Sheet1");
+    builder.setIncludePicture(true);//If need display picture.
+    String json = builder.build(new File("Book1.xlsx"), "Sheet1").toJson();
     
 Next, embed JSON string to HTML, and apply jQuery plugin method to a div element that holding a canvas element.
 
@@ -26,7 +27,8 @@ Next, embed JSON string to HTML, and apply jQuery plugin method to a div element
     
     <link rel="stylesheet" type="text/css" media="screen,print" href="jquery.excel2canvas.css" />
     <script type="text/javascript" language="javascript"  src="flotr2.js"></script>
-    <script type="text/javascript" language="javascript"  src="jquery.excel2canvas.js"></script>
+    <script type="text/javascript" language="javascript"  src="jquery.excel2canvas.min.js"></script>
+    <script type="text/javascript" language="javascript"  src="jquery.excel2chart.flotr2.min.js"></script>
 
     <script>
     $(function() {
