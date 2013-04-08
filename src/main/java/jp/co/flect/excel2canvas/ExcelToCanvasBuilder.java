@@ -276,6 +276,17 @@ public class ExcelToCanvasBuilder {
 		if (this.readMaxRow > 0 && this.maxRow > this.readMaxRow) {
 			this.maxRow = this.readMaxRow;
 		}
+		if (this.includeCells != null) {
+			for (String cell : this.includeCells) {
+				Point p = ExcelUtils.nameToPoint(cell);
+				if (p.x > this.maxCol) {
+					this.maxCol = p.x;
+				}
+				if (p.y > this.maxRow) {
+					this.maxRow = p.y;
+				}
+			}
+		}
 		if (this.readRange != null) {
 			startRow = this.readRange.y;
 			startCol = this.readRange.x;
