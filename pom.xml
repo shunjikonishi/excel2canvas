@@ -14,8 +14,8 @@
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<github.global.server>github</github.global.server>
 	</properties>
-	
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
@@ -75,6 +75,45 @@
 					<outputDirectory>target</outputDirectory>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>com.github.github</groupId>
+				<artifactId>site-maven-plugin</artifactId>
+				<version>0.7</version>
+				<configuration>
+					<message>Maven artifacts for ${project.version}</message>
+					<noJekyll>true</noJekyll>
+					<outputDirectory>${env.MAVEN_LOCAL_REPOSITORY}</outputDirectory>
+					<branch>refs/heads/gh-pages</branch>
+					<includes>
+						<include>**/*</include>
+					</includes>
+					<repositoryName>maven-repo</repositoryName>
+					<repositoryOwner>shunjikonishi</repositoryOwner>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>site</goal>
+						</goals>
+						<phase>deploy</phase>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>org.eclipse.mylyn.github</groupId>
+						<artifactId>org.eclipse.egit.github.core</artifactId>
+						<version>2.0.3</version>
+					</dependency>                        
+				</dependencies> 
+			</plugin>
 		</plugins>
 	</build>
+	
+	<distributionManagement>
+		<repository>
+			<id>local.repo</id>
+			<name>My Repository</name>
+			<url>file://${env.MAVEN_LOCAL_REPOSITORY}</url>
+		</repository>
+	</distributionManagement>
 </project>
