@@ -80,7 +80,7 @@
 				<artifactId>site-maven-plugin</artifactId>
 				<version>0.7</version>
 				<configuration>
-					<message>Maven artifacts for ${project.version}</message>
+					<message>Maven artifacts for ${project.artifactId}-${project.version}</message>
 					<noJekyll>true</noJekyll>
 					<outputDirectory>${env.MAVEN_LOCAL_REPOSITORY}</outputDirectory>
 					<branch>refs/heads/gh-pages</branch>
@@ -88,7 +88,7 @@
 						<include>**/*</include>
 					</includes>
 					<repositoryName>maven-repo</repositoryName>
-					<repositoryOwner>shunjikonishi</repositoryOwner>
+					<repositoryOwner>flect</repositoryOwner>
 				</configuration>
 				<executions>
 					<execution>
