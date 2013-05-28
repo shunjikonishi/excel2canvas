@@ -6,11 +6,11 @@
 	
 	<groupId>jp.co.flect</groupId>
 	<artifactId>excel2canvas</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.0</version>
 	<packaging>jar</packaging>
 	
 	<name>excel2canvas</name>
-	<url>http://maven.apache.org</url>
+	<url>https://github.com/shunjikonishi/excel2canvas</url>
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -74,6 +74,39 @@
 					<suffix>.min</suffix>
 					<outputDirectory>target</outputDirectory>
 				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.4.3</version>
+				<executions>
+					<execution>
+					<id>copy-resources</id>
+					<phase>deploy</phase>
+					<goals>
+						<goal>copy-resources</goal>
+					</goals>
+					<configuration>
+						<outputDirectory>dist</outputDirectory>
+						<resources>
+							<resource>
+								<directory>target</directory>
+								<includes>
+									<include>*.js</include>
+									<include>*.css</include>
+									<include>*.jar</include>
+								</includes>
+							</resource>
+							<resource>
+								<directory>src/main/js</directory>
+								<includes>
+									<include>*.js</include>
+									<include>*.css</include>
+								</includes>
+							</resource>
+						</resources>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>com.github.github</groupId>
