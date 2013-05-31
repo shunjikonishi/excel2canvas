@@ -150,6 +150,9 @@ public class CellValueHelper {
 		} else if (firstChar == '=') {
 			cell.setCellFormula(value);
 			return;
+		} else if (firstChar == '\'') {
+			cell.setCellValue(value.substring(1));
+			return;
 		}
 		cell.setCellValue(value);
 	}
