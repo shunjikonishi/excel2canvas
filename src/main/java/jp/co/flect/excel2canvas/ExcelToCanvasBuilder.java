@@ -87,6 +87,7 @@ public class ExcelToCanvasBuilder {
 	private boolean includeComment = false;
 	private boolean includeChart = false;
 	private boolean includePicture = false;
+	private boolean includeHiddenCell = false;
 	private ExpandChecker expandChecker = null;
 	private Set<String> includeCells = null;
 	
@@ -172,6 +173,9 @@ public class ExcelToCanvasBuilder {
 	
 	public boolean isIncludePicture() { return this.includePicture;}
 	public void setIncludePicture(boolean b) { this.includePicture = b;}
+	
+	public boolean isIncludeHiddenCell() { return this.includeHiddenCell;}
+	public void setIncludeHiddenCell(boolean b) { this.includeHiddenCell = b;}
 	
 	public ExpandChecker getExpandChecker() { return this.expandChecker;}
 	public void setExpandChecker(ExpandChecker c) { this.expandChecker = c;}
@@ -343,7 +347,7 @@ public class ExcelToCanvasBuilder {
 			for (int j=startCol; j<this.maxCol; j++) {
 				int w = getColumnWidth(j);
 				CellWrapper cw = this.cells[i-startRow][j-startCol];
-				if (cw.isHidden()) {
+				if (!this.includeHiddenCell && cw.isHidden()) {
 					continue;
 				}
 				Cell cell = cw.getCell();
