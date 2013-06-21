@@ -3,10 +3,15 @@ package jp.co.flect.excel2canvas;
 import java.awt.Point;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Types;
 
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -17,6 +22,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
 /**
  * Utility
@@ -334,4 +340,50 @@ public class ExcelUtils {
 		return true;
 	}
 	
+	public static void resultSetToExcel(ResultSet rs, File f) throws IOException, SQLException {
+		SXSSFWorkbook wb = new SXSSFWorkbook(100);
+		try {
+			Sheet sheet = wb.createSheet();
+			
+			ResultSetMetaData meta = rs.getMetaData();
+			int rowNum = 0;
+			int colLen = meta.getColumnCount();
+			boolean[] types = new boolean[colLen];
+			Row row = sheet.createRow(rowNum++);
+			for (int i=0; i<colLen; i++) {
+				Cell cell = row.createCell(i);
+				cell.setCellValue(meta.getColumnLabel(i+1));
+				int n = meta.getColumnType(i+1);
+				types[i] = n == Types.BIGINT ||
+				           n == Types.DECIMAL ||
+				           n == Types.DOUBLE ||
+				           n == Types.FLOAT ||
+				           n == Types.INTEGER ||
+				           n == Types.NUMERIC ||
+				           n == Types.REAL ||
+				           n == Types.SMALLINT ||
+				           n == Types.TINYINT;
+			}
+			
+			while (rs.next()) {
+				row = sheet.createRow(rowNum++);
+				for (int i=0; i<colLen; i++) {
+					Cell cell = row.createCell(i);
+					if (types[i]) {
+						cell.setCellValue(rs.getDouble(i+1));
+					} else {
+						cell.setCellValue(rs.getString(i+1));
+					}
+				}
+			}
+			FileOutputStream os = new FileOutputStream(f);
+			try {
+				wb.write(os);
+			} finally {
+				os.close();
+			}
+		} finally {
+			wb.dispose();
+		}
+	}
 }
