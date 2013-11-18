@@ -16,6 +16,15 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<github.global.server>github</github.global.server>
 	</properties>
+	
+	<repositories>
+		<repository>
+			<id>flect</id>
+			<name>flect</name>
+			<url>http://flect.github.io/maven-repo/</url>
+		</repository>
+	</repositories>
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
@@ -107,6 +116,21 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9.1</version>
+				<configuration>
+					<doclet>jp.co.flect.doclets.github.Standard</doclet>
+					<docletArtifact>
+						<groupId>jp.co.flect</groupId>
+						<artifactId>githubDoclet</artifactId>
+						<version>1.0</version>
+					</docletArtifact>
+					<additionalparam>-github https://github.com/shunjikonishi/excel2canvas/tree/master/src/main/java</additionalparam>
+					<useStandardDocletOptions>true</useStandardDocletOptions>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>com.github.github</groupId>
