@@ -11,6 +11,10 @@ Its source codes consists of two parts.
 1. **Java.** It is used to convert Excel file to JSON.
 2. **JavaScript.** It is used to draw Excel view on the web browser.
 
+JavaDoc
+-------
+http://oss.flect.co.jp/apidocs/excel2canvas/index.html
+
 Usage
 -----
 At first, read an excel file and convert it to JSON string.
