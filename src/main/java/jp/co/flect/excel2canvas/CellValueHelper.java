@@ -25,6 +25,7 @@ public class CellValueHelper {
 	private DataFormatterEx dataFormatter;
 	private HashMap<String, FormattedValue> cached = null;
 	private SimpleDateFormat[] dateFormats = null;
+	private ExceptionHandler exHandler = null;
 	
 	public CellValueHelper(Workbook workbook, boolean cache) {
 		this(workbook, cache, Locale.getDefault());
@@ -82,15 +83,9 @@ public class CellValueHelper {
 						}
 						ret = dataFormatter.formatCellValue(cell, evaluator);
 					} catch (NotImplementedException e) {
-						int stack = 0;
-						while (e.getCause() != null) {
-							e = (NotImplementedException)e.getCause();
-							stack++;
-						}
-						System.out.println("!!! Unsupported Formula !!! - " + e.getMessage() + " - " + stack);
+						handleException(e);
 					} catch (Exception e) {
-						System.err.println("!!! Unknown Error !!!");
-						e.printStackTrace();
+						handleException(e);
 					}
 					if (ret == null) {
 						int cachedType = cell.getCachedFormulaResultType();
@@ -109,8 +104,7 @@ public class CellValueHelper {
 					break;
 			}
 		} catch (Exception e) {
-			System.err.println("!!! Unknown error !!!");
-			e.printStackTrace();
+			handleException(e);
 			return new FormattedValue(e.toString(), FormattedValue.Type.ERROR, e.toString());
 		}
 		throw new IllegalStateException();
@@ -157,4 +151,26 @@ public class CellValueHelper {
 		cell.setCellValue(value);
 	}
 	
+	public ExceptionHandler getExceptionHandler() { return this.exHandler;}
+	public void setExceptionHandler(ExceptionHandler v) { this.exHandler = v;}
+
+	public interface ExceptionHandler {
+		public void handle(Exception e);
+	}
+
+	private void handleException(Exception e) {
+		if (this.exHandler != null) {
+			this.exHandler.handle(e);
+		} else if (e instanceof NotImplementedException) {
+			int stack = 0;
+			while (e.getCause() != null) {
+				e = (NotImplementedException)e.getCause();
+				stack++;
+			}
+			System.err.println("!!! Unsupported Formula !!! - " + e.getMessage() + " - " + stack);
+		} else {
+			System.err.println("!!! Unknown Error !!!");
+			e.printStackTrace();
+		}
+	}
 }
