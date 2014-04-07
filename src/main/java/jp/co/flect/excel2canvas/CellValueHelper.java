@@ -66,6 +66,8 @@ public class CellValueHelper {
 			this.cached.clear();
 		}
 	}
+
+	public FormulaEvaluator getEvaluator() { return this.evaluator;}
 	
 	public FormattedValue getFormattedValue(Cell cell) {
 		return getFormattedValue(cell, cell.getCellType());
