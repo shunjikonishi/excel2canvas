@@ -934,9 +934,10 @@ public class ExcelToCanvasBuilder {
 			}
 			String id = ExcelUtils.pointToName(col, row);
 			String text = getText();
+			boolean bIncludeCell = includeCells != null && includeCells.contains(id);
 			if (text == null) {
 				if (includeEmptyStr || 
-				    (includeCells != null && includeCells.contains(id)) ||
+				    bIncludeCell ||
 				    (includeRawData && isFormula()) ||
 				    (includeComment && this.cell != null && this.cell.getCellComment() != null)
 				   ) 
@@ -1045,7 +1046,7 @@ public class ExcelToCanvasBuilder {
 			int startRow = readRange == null ? 0 : readRange.y;
 			int startCol = readRange == null ? 0 : readRange.x;
 			int width = getWidth();
-			if (comment == null && isExpandCell(style, align)) {
+			if (comment == null && !bIncludeCell && isExpandCell(style, align)) {
 				for (int i=this.col + 1; i<maxCol; i++) {
 					CellWrapper next = cells[this.row - startRow][i - startCol];
 					CellStyle nextStyle = next.getCellStyle();
