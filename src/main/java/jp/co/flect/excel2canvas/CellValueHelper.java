@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.formula.eval.NotImplementedException;
 
 /**
@@ -21,6 +22,15 @@ public class CellValueHelper {
 		"HH:mm:ss"
 	};
 	
+	public static boolean isTextFormat(Cell cell) {
+		if (cell == null) return false;
+
+		CellStyle style = cell.getCellStyle();
+		if (style == null) return false;
+
+		return style.getDataFormat() == 49 && "@".equals(style.getDataFormatString());
+	}
+
 	private FormulaEvaluator evaluator;
 	private DataFormatterEx dataFormatter;
 	private HashMap<String, FormattedValue> cached = null;
@@ -116,7 +126,7 @@ public class CellValueHelper {
 			return;
 		}
 		char firstChar = value.charAt(0);
-		if (firstChar == '-' || firstChar == '.' || (firstChar >= '0' && firstChar <= '9')) {
+		if (!isTextFormat(cell) && (firstChar == '-' || firstChar == '.' || (firstChar >= '0' && firstChar <= '9'))) {
 			try {
 				cell.setCellValue(Double.parseDouble(value));
 				return;
