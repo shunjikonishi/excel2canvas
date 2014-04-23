@@ -1,6 +1,7 @@
 package jp.co.flect.excel2canvas;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -8,6 +9,9 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.BitSet;
+import java.util.HashSet;
+import java.util.Set;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -22,6 +26,13 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.Name;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.util.AreaReference;
+import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
 /**
@@ -386,4 +397,133 @@ public class ExcelUtils {
 			wb.dispose();
 		}
 	}
+
+	public static CellStyle createDefaultLabelStyle(Workbook workbook) {
+		CellStyle style = workbook.createCellStyle();
+		Font font = workbook.createFont();
+		font.setBoldweight(Font.BOLDWEIGHT_BOLD);
+		font.setFontHeightInPoints((short)12);
+		style.setFont(font);
+		style.setBorderBottom(CellStyle.BORDER_DOUBLE);
+		style.setFillPattern(CellStyle.SOLID_FOREGROUND);
+		style.setFillForegroundColor(IndexedColors.AQUA.getIndex());
+		return style;
+	}
+	
+	public static CellStyle createDateStyle(Workbook workbook, String format) {
+		CellStyle style = workbook.createCellStyle();
+		DataFormat df = workbook.createDataFormat();
+		style.setDataFormat(df.getFormat(format));
+		return style;
+	}
+	
+	public static List<NamedCellInfo> createNamedCellList(Workbook workbook) {
+		return createNamedCellList(workbook, null);
+	}
+	
+	public static List<NamedCellInfo> createNamedCellList(Workbook workbook, String targetSheet) {
+		Set<Sheet> sheetSet = new HashSet<Sheet>();
+		List<TempName> tempList = new ArrayList<TempName>();
+		for (int i=0; i<workbook.getNumberOfNames(); i++) {
+			//isDeleted, isFunctionNameは正しい値を返さないことがあり、
+			//その場合getSheetNameの実行またはAreaReferenceの生成でエラーとなる
+			//それらは正しい名前参照ではないのでNamedCellInfoのListには含めない
+			try {
+				Name name = workbook.getNameAt(i);
+				if (name.isFunctionName() || name.isDeleted()) {
+					continue;
+				}
+				if (targetSheet != null && !targetSheet.equals(name.getSheetName())) {
+					continue;
+				}
+				Sheet sheet = workbook.getSheet(name.getSheetName());
+				if (sheet == null) {
+					continue;
+				}
+				sheetSet.add(sheet);
+				
+				AreaReference area = new AreaReference(name.getRefersToFormula());
+				tempList.add(new TempName(name, area, sheet.getNumMergedRegions()));
+			} catch (Exception e) {
+				//Ignore
+				e.printStackTrace();
+			}
+		}
+		for (Sheet sheet : sheetSet) {
+			for (int i=0; i<sheet.getNumMergedRegions(); i++) {
+				CellRangeAddress mr = sheet.getMergedRegion(i);
+				for (TempName temp : tempList) {
+					if (temp.getSheetName().equals(sheet.getSheetName()) && temp.isLap(mr)) {
+						temp.relatedMergedRegion.set(i);
+					}
+				}
+			}
+		}
+		List<NamedCellInfo> ret = new ArrayList<NamedCellInfo>(tempList.size());
+		for (TempName temp : tempList) {
+			Sheet sheet = workbook.getSheet(temp.getSheetName());
+			List<CellReference> cellList = new ArrayList<CellReference>();
+			BitSet bs = temp.relatedMergedRegion;
+			
+			CellReference[] cells = temp.area.getAllReferencedCells();
+			for (CellReference cell : cells) {
+				boolean add = true;
+				for (int i=bs.nextSetBit(0); i>=0; i=bs.nextSetBit(i+1)) {
+					CellRangeAddress mr = sheet.getMergedRegion(i);
+					if (mr.isInRange(cell.getRow(), cell.getCol())) {
+						if (mr.getFirstRow() != cell.getRow() || mr.getFirstColumn() != cell.getCol()) {
+							add = false;
+						}
+						break;
+					}
+				}
+				if (add) {
+					cellList.add(cell);
+				}
+			}
+			if (cellList.size() > 0) {
+				ret.add(new NamedCellInfo(temp.name, cellList));
+			}
+		}
+		return ret;
+	}
+	
+	private static class TempName {
+		
+		public Name name;
+		public AreaReference area;
+		public BitSet relatedMergedRegion;
+		
+		public TempName(Name name, AreaReference area, int mrCount) {
+			this.name = name;
+			this.area = area;
+			this.relatedMergedRegion = new BitSet(mrCount);
+		}
+		
+		public String getSheetName() {
+			return this.area.getFirstCell().getSheetName();
+		}
+		
+		public boolean isLap(CellRangeAddress mr) {
+			int minRow1 = mr.getFirstRow();
+			int maxRow1 = mr.getLastRow();
+			int minCol1 = mr.getFirstColumn();
+			int maxCol1 = mr.getLastColumn();
+			
+			if (area.isSingleCell()) {
+				int row = area.getFirstCell().getRow();
+				int col = area.getFirstCell().getCol();
+				return minRow1 <= row && row <= maxRow1 && minCol1 <= col && col <= minCol1;
+			}
+			int minRow2 = Math.min(area.getFirstCell().getRow(), area.getLastCell().getRow());
+			int maxRow2 = Math.max(area.getFirstCell().getRow(), area.getLastCell().getRow());
+			int minCol2 = Math.min(area.getFirstCell().getCol(), area.getLastCell().getCol());
+			int maxCol2 = Math.max(area.getFirstCell().getCol(), area.getLastCell().getCol());
+			
+			Rectangle r1 = new Rectangle(minCol1, minRow1, maxCol1 - minCol1 + 1, maxRow1 - minRow1 + 1);
+			Rectangle r2 = new Rectangle(minCol2, minRow2, maxCol2 - minCol2 + 1, maxRow2 - minRow2 + 1);
+			return r1.intersects(r2);
+		}
+	}
+	
 }
