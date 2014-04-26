@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Objects;
 
 import org.apache.poi.POIXMLDocumentPart;
 import org.apache.poi.ss.usermodel.Font;
@@ -46,7 +47,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTDrawing;
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTTwoCellAnchor;
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTPicture;
-import org.apache.commons.lang.StringUtils;
 
 import jp.co.flect.excel2canvas.chart.Chart;
 import jp.co.flect.excel2canvas.chart.ChartFactory;
@@ -653,7 +653,7 @@ public class ExcelToCanvasBuilder {
 						sx = x;
 						kind = info.getKind();
 						strColor = info.getColor();
-					} else if (kind != info.getKind() || !StringUtils.equals(strColor, info.getColor())) {
+					} else if (kind != info.getKind() || !Objects.equals(strColor, info.getColor())) {
 						ret.addLineInfo(new ExcelToCanvas.LineInfo(sx, y, x, y, kind, strColor));
 						updateWriteCell(i, j);
 						sx = x;
@@ -701,7 +701,7 @@ public class ExcelToCanvasBuilder {
 						sy = y;
 						kind = info.getKind();
 						strColor = info.getColor();
-					} else if (kind != info.getKind() || !StringUtils.equals(strColor, info.getColor())) {
+					} else if (kind != info.getKind() || !Objects.equals(strColor, info.getColor())) {
 						ret.addLineInfo(new ExcelToCanvas.LineInfo(x, sy, x, y, kind, strColor));
 						updateWriteCell(j, i);
 						sy = y;
@@ -1220,5 +1220,5 @@ public class ExcelToCanvasBuilder {
 		public int getKind() { return this.kind;}
 		public String getColor() { return this.color;}
 	}
-	
+
 }
