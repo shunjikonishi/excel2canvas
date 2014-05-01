@@ -6,7 +6,7 @@
 	
 	<groupId>jp.co.flect</groupId>
 	<artifactId>excel2canvas</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.0.3</version>
 	<packaging>jar</packaging>
 	
 	<name>excel2canvas</name>
@@ -38,8 +38,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
-			<artifactId>poi-ooxml-schemas</artifactId>
-			<version>3.10-FINAL</version>
+			<artifactId>ooxml-schemas</artifactId>
+			<version>1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>

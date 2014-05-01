@@ -100,6 +100,22 @@ Followings are some of its samples.(Japanese only)
 - [Purchase order](https://excelnote.herokuapp.com/share/excel/s91/09880d80-43bd-4728-9f8f-300b84a3a32c/151561d3185ea4c1dc7fa3ab3f2db653?sheet=%E7%99%BA%E6%B3%A8%E6%9B%B8&theme=redmond)  
   It is able to print as is from web browser.
 
+Vesion
+------
+Current version is 1.0.3
+
+Install
+-------
+You can install this library from FLECT maven repository.
+
+sbt
+    resolvers += "FLECT" at "http://flect.github.io/maven-repo/"
+    
+    libraryDependencies += "jp.co.flect" % "excel2canvas" % "1.0.3"
+
+bower
+    bower install https://github.com/shunjikonishi/excel2canvas.git
+
 License
 -------
 MIT
