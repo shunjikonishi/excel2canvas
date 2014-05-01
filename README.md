@@ -108,13 +108,19 @@ Install
 -------
 You can install this library from FLECT maven repository.
 
-sbt
-    resolvers += "FLECT" at "http://flect.github.io/maven-repo/"
-    
-    libraryDependencies += "jp.co.flect" % "excel2canvas" % "1.0.3"
+sbt  
 
-bower
-    bower install https://github.com/shunjikonishi/excel2canvas.git
+```
+resolvers += "FLECT" at "http://flect.github.io/maven-repo/"
+
+libraryDependencies += "jp.co.flect" % "excel2canvas" % "1.0.3"
+```
+
+bower  
+
+```
+bower install https://github.com/shunjikonishi/excel2canvas.git
+```
 
 License
 -------
