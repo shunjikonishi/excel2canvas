@@ -243,14 +243,9 @@
 					context.fill();
 					context.closePath();
 					div.tooltip({
-						"title" : str.comment
+						"title" : str.comment,
+						"html" : true
 					});
-					/*
-					div.data("tooltip").tip().find(".tooltip-inner").css({
-						"font-size" : "12px",
-						"text-align" : "left"
-					});
-					*/
 				}
 				holder.append(div);
 			}
