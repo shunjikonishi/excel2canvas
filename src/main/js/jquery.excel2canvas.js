@@ -15,8 +15,8 @@
 		BORDER_SLANTED_DASH_DOT    = 13,
 		context;
 	
-	function isTooltipIsBootstrap() {
-		return $.fn.tooltip && $.fn.tooltip.defaults
+	function hasTooltip() {
+		return !!$.fn.tooltip
 	}
 	function fillStyle(data, fill) {
 		var back = fill.back,
@@ -230,7 +230,7 @@
 				if (str.clazz) {
 					div.addClass(str.clazz);
 				}
-				if (str.comment && isTooltipIsBootstrap()) {
+				if (str.comment && hasTooltip()) {
 					context.strokeStyle = "red";
 					context.fillStyle = "red";
 					
