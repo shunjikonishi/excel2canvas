@@ -100,6 +100,23 @@ public class ExcelToCanvasBuilder {
 	public ExcelToCanvasBuilder(Locale l) {
 		this.locale = l;
 	}
+
+	public ExcelToCanvasMap buildAll(File f) throws IOException, InvalidFormatException {
+		return buildAll(ExcelUtils.createWorkbook(f));
+	}
+	
+	public ExcelToCanvasMap buildAll(InputStream is) throws IOException, InvalidFormatException {
+		return buildAll(ExcelUtils.createWorkbook(is));
+	}
+	
+	public ExcelToCanvasMap buildAll(Workbook workbook) throws IOException, InvalidFormatException {
+		ExcelToCanvasMap map = new ExcelToCanvasMap();
+		for (int i=0; i<workbook.getNumberOfSheets(); i++) {
+			String name = workbook.getSheetName(i);
+			map.put(name, build(workbook, name));
+		}
+		return map;
+	}
 	
 	public ExcelToCanvas build(File f) throws IOException, InvalidFormatException {
 		return build(ExcelUtils.createWorkbook(f));

@@ -131,24 +131,28 @@ public class ExcelToCanvas {
 		public String getColor() { return this.color;}
 	}
 	
+	void loadInit() {
+		if (this.fills != null) {
+			for (FillInfo f : this.fills) {
+				f.parent = this;
+			}
+		}
+		if (this.strs != null) {
+			for (StrInfo s : this.strs) {
+				s.parent = this;
+			}
+		}
+	}
+	
 	public String toJson() {
 		return new Gson().toJson(this);
 	}
-	
+
 	public static ExcelToCanvas fromJson(String json) {
 		GsonBuilder builder = new GsonBuilder();
 		builder.registerTypeAdapter(Chart.class, new Flotr2());
 		ExcelToCanvas excel = builder.create().fromJson(json, ExcelToCanvas.class);
-		if (excel.fills != null) {
-			for (FillInfo f : excel.fills) {
-				f.parent = excel;
-			}
-		}
-		if (excel.strs != null) {
-			for (StrInfo s : excel.strs) {
-				s.parent = excel;
-			}
-		}
+		excel.loadInit();
 		return excel;
 	}
 	
