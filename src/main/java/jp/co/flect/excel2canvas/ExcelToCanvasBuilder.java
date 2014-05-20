@@ -299,6 +299,10 @@ public class ExcelToCanvasBuilder {
 		}
 		if (this.includeCells != null) {
 			for (String cell : this.includeCells) {
+				int idx = cell.lastIndexOf("!");
+				if (idx != -1) {
+					cell = cell.substring(idx + 1);
+				}
 				Point p = ExcelUtils.nameToPoint(cell);
 				if (p.x > this.maxCol) {
 					this.maxCol = p.x;
@@ -951,7 +955,7 @@ public class ExcelToCanvasBuilder {
 			}
 			String id = ExcelUtils.pointToName(col, row);
 			String text = getText();
-			boolean bIncludeCell = includeCells != null && includeCells.contains(id);
+			boolean bIncludeCell = isIncludeCell(id);
 			if (text == null) {
 				if (includeEmptyStr || 
 				    bIncludeCell ||
@@ -1159,6 +1163,13 @@ public class ExcelToCanvasBuilder {
 			return this.formattedValue != null && this.formattedValue.getFormula() != null;
 		}
 		
+		private boolean isIncludeCell(String id) {
+			if (includeCells == null || this.cell == null) {
+				return false;
+			}
+			return includeCells.contains(id) || includeCells.contains(this.cell.getSheet().getSheetName() + "!" + id);
+		}
+
 		private String convertHtml(String value) {
 			StringBuilder buf = new StringBuilder();
 			int len = value.length();
