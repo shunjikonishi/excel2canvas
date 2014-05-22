@@ -102,7 +102,6 @@ public class Flotr2ChartFactory implements ChartFactory {
 		if (plotArea.sizeOfBubbleChartArray() > 0) {
 			return createBubbleChart(workbook, ctChart, plotArea.getBubbleChartArray(0));
 		}
-System.out.println(plotArea);
 		return null;
 	}
 	
