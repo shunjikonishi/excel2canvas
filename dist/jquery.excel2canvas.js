@@ -179,6 +179,9 @@
 		context = canvas[0].getContext("2d");
 		context.fillStyle = "white";
 		context.fillRect(0, 0, data.width, data.height);
+		if (data.font) {
+			context.font = data.font;
+		}
 		
 		if (data.fills) {
 			for (var i=0; i<data.fills.length; i++) {

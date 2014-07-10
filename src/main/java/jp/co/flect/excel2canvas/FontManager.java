@@ -16,6 +16,8 @@ public class FontManager {
 	}
 	
 	private Map<String, String> map;
+	private String minchoFont = null;
+	private String gothicFont = null;
 	
 	public FontManager() {
 		this.map =  new HashMap<String, String>(DEFAULT_MAP);
@@ -26,6 +28,12 @@ public class FontManager {
 		this.map.putAll(map);
 	}
 	
+	public String getMinchoFont() { return minchoFont;}
+	public void setMinchoFont(String s) { minchoFont = s;}
+
+	public String getGothicFont() { return gothicFont;}
+	public void setGothicFont(String s) { gothicFont = s;}
+
 	public String getFontFamily(String fontName) {
 		StringBuilder buf = new StringBuilder(fontName);
 		String converted = this.map.get(fontName);
@@ -34,8 +42,14 @@ public class FontManager {
 		}
 		String ret = buf.toString();
 		if (ret.indexOf("ゴシック") != -1 || ret.indexOf("Gothic") != -1 || ret.indexOf("ｺﾞｼｯｸ") != -1) {
+			if (this.gothicFont != null) {
+				buf.insert(0, this.gothicFont + ";");
+			}
 			buf.append(",sans-serif");
 		} else if (ret.indexOf("明朝") != -1 || ret.indexOf("Mincho") != -1) {
+			if (this.minchoFont != null) {
+				buf.insert(0, this.minchoFont + ";");
+			} 
 			buf.append(",serif");
 		} else if (ret.indexOf("行書") != -1 || ret.indexOf("草書") != -1) {
 			buf.append(",cursive");
