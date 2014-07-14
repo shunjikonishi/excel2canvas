@@ -6,7 +6,7 @@
 	
 	<groupId>jp.co.flect</groupId>
 	<artifactId>excel2canvas</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.1</version>
 	<packaging>jar</packaging>
 	
 	<name>excel2canvas</name>

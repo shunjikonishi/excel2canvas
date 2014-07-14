@@ -1,6 +1,13 @@
 (function ($) {
 	if (typeof(Flotr) === "object") {
-		$.fn.excelToChart = function(chart) {
+		var defaultOptions = {
+			"HtmlText" : false
+		};
+		$.fn.excelToChart = function(chart, op) {
+			var options = $.extend({}, defaultOptions);
+			if (op) {
+				$.extend(options, op);
+			}
 			function buildChartOption() {
 				var type = chart.type,
 					option = chart.option,
@@ -8,7 +15,7 @@
 				switch (type) {
 					case "PIE":
 						base = {
-							"HtmlText" : false,
+							"HtmlText" : options.HtmlText,
 							"grid" : {
 								"verticalLines" : false,
 								"horizontalLines" : false
@@ -36,7 +43,7 @@
 					case "BAR":
 						var horizontal = option.bars.horizontal;
 						base = {
-							"HtmlText" : false,
+							"HtmlText" : options.HtmlText,
 							"bars" : {
 								"show" : true,
 								"horizontal" : false,
@@ -61,7 +68,7 @@
 						break;
 					case "LINE":
 						base = {
-							"HtmlText" : false,
+							"HtmlText" : options.HtmlText,
 							"xaxis" : {
 								"min" : 0,
 								"max" : chart.labels.length + 1
@@ -77,7 +84,7 @@
 						break;
 					case "RADAR":
 						base = {
-							"HtmlText" : false,
+							"HtmlText" : options.HtmlText,
 							"radar" : {
 								"show" : true,
 								"fill" : false
@@ -101,7 +108,7 @@
 						break;
 					case "BUBBLE":
 						base = {
-							"HtmlText" : false,
+							"HtmlText" : options.HtmlText,
 							"bubbles" : {
 								"show" : true
 							},

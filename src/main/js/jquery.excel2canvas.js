@@ -271,6 +271,7 @@
 		if (data.charts && $.fn.excelToChart) {
 			for (var i=0; i<data.charts.length; i++) {
 				var chart = data.charts[i],
+					options = {},
 					chartDiv = $("<div class='excel-chart'></div>");
 				chartDiv.css({
 					"left" : chart.p[0],
@@ -279,7 +280,10 @@
 					"height" : chart.p[3]
 				});
 				holder.append(chartDiv);
-				chartDiv.excelToChart(chart.chart);
+				if (data.font) {
+					options.HtmlText = true;
+				}
+				chartDiv.excelToChart(chart.chart, options);
 				chartDiv.css("position", "absolute");
 			}
 		}
