@@ -7,8 +7,11 @@ import java.util.HashMap;
 import java.text.SimpleDateFormat;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.ss.formula.eval.NotImplementedException;
 
 /**
@@ -31,6 +34,7 @@ public class CellValueHelper {
 		return style.getDataFormat() == 49 && "@".equals(style.getDataFormatString());
 	}
 
+	private Workbook workbook;
 	private FormulaEvaluator evaluator;
 	private DataFormatterEx dataFormatter;
 	private HashMap<String, FormattedValue> cached = null;
@@ -42,6 +46,7 @@ public class CellValueHelper {
 	}
 	
 	public CellValueHelper(Workbook workbook, boolean cache, Locale locale) {
+		this.workbook = workbook;
 		this.evaluator = workbook.getCreationHelper().createFormulaEvaluator();
 		this.dataFormatter = new DataFormatterEx(locale);
 		if (cache) {
@@ -161,6 +166,33 @@ public class CellValueHelper {
 			return;
 		}
 		cell.setCellValue(value);
+	}
+	
+	public boolean isEmptyCell(Cell cell) {
+		if (cell == null) {
+			return true;
+		}
+		if (cell.getCellType() == Cell.CELL_TYPE_FORMULA) {
+			return false;
+		}
+		String value = getFormattedValue(cell).getValue();
+		return value == null || value.length() == 0;
+	}
+
+	public boolean isEmptyCell(CellReference cRef) {
+		Sheet sheet = workbook.getSheet(cRef.getSheetName());
+		if (sheet == null) {
+			return false;
+		}
+		return isEmptyCell(sheet, cRef);
+	}
+
+	public boolean isEmptyCell(Sheet sheet, CellReference cRef) {
+		Row row = sheet.getRow(cRef.getRow());
+		if (row == null) {
+			return false;
+		}
+		return isEmptyCell(row.getCell(cRef.getCol()));
 	}
 	
 	public ExceptionHandler getExceptionHandler() { return this.exHandler;}

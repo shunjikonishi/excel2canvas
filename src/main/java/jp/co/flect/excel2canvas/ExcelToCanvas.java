@@ -145,7 +145,15 @@ public class ExcelToCanvas {
 	}
 	
 	public String toJson() {
-		return new Gson().toJson(this);
+		return toJson(false);
+	}
+
+	public String toJson(boolean indent) {
+		GsonBuilder builder = new GsonBuilder();
+		if (indent) {
+			builder = builder.setPrettyPrinting();
+		}
+		return builder.create().toJson(this);
 	}
 
 	public static ExcelToCanvas fromJson(String json) {
