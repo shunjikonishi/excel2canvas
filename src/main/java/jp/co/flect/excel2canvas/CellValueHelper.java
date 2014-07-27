@@ -190,7 +190,7 @@ public class CellValueHelper {
 	public boolean isEmptyCell(Sheet sheet, CellReference cRef) {
 		Row row = sheet.getRow(cRef.getRow());
 		if (row == null) {
-			return false;
+			return true;
 		}
 		return isEmptyCell(row.getCell(cRef.getCol()));
 	}
