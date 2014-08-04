@@ -233,6 +233,11 @@
 				if (str.clazz) {
 					div.addClass(str.clazz);
 				}
+				if (str.dataAttrs) {
+					$.each(str.dataAttrs, function(key, value) {
+						div.attr("data-" + key, value);
+					});
+				}
 				if (str.comment && hasTooltip()) {
 					context.strokeStyle = "red";
 					context.fillStyle = "red";

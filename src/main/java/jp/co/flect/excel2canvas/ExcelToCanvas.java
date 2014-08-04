@@ -265,6 +265,7 @@ public class ExcelToCanvas {
 		private Integer commentWidth;
 		private transient Map<String, String> styleMap;
 		private String clazz;
+		private Map<String, String> dataAttrs = null;
 		
 		public StrInfo(int[] p, String id, String text, String align, Map<String, String> styleMap, String link, String comment, Integer commentWidth, boolean formula) {
 			this.p = p;
@@ -372,6 +373,15 @@ public class ExcelToCanvas {
 			}
 			this.styleMap.put(name, value);
 			setStyle(mapToStyle(this.styleMap));
+		}
+
+		public Map<String, String> getDataAttrs() { return this.dataAttrs;}
+		public String getDataAttr(String name) { return this.dataAttrs == null ? null : this.dataAttrs.get(name);}
+		public void setDataAttr(String name, String value) {
+			if (this.dataAttrs == null) {
+				this.dataAttrs = new HashMap<String, String>();
+			}
+			this.dataAttrs.put(name, value);
 		}
 	}
 	
