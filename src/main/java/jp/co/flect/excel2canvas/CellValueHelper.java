@@ -70,6 +70,8 @@ public class CellValueHelper {
 		if (this.cached != null) {
 			this.cached.clear();
 		}
+		//FormulaEvaluator keeps calculated values.
+		this.evaluator = workbook.getCreationHelper().createFormulaEvaluator();
 	}
 
 	public FormulaEvaluator getEvaluator() { return this.evaluator;}
