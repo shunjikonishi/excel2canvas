@@ -112,7 +112,7 @@ Flotr.defaultOptions = {
   }
 };
  */
-public class Flotr2 implements Chart, JsonDeserializer<Chart> {
+public class Flotr2 implements Chart, Cloneable, JsonDeserializer<Chart> {
 	
 	public enum Type {
 		PIE,
@@ -695,6 +695,14 @@ public class Flotr2 implements Chart, JsonDeserializer<Chart> {
 			}
 		}
 		return ret;
+	}
+
+	public Chart cloneChart() {
+		try {
+			return (Chart)super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 }
 
