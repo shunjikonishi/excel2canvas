@@ -68,7 +68,7 @@
 
 input.cellInput, textarea.cellInput, select.cellInput {
 	margin:1px 4px;
-	padding: 0;
+	padding: 0 2px;
 	background: none;
 	border: none;
 	resize: none;
