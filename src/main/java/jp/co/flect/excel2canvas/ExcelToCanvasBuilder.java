@@ -983,7 +983,7 @@ public class ExcelToCanvasBuilder {
 					if (type == Cell.CELL_TYPE_FORMULA) {
 						type = cell.getCachedFormulaResultType();
 					}
-					if (type == Cell.CELL_TYPE_NUMERIC) {
+					if (type == Cell.CELL_TYPE_NUMERIC || ExcelUtils.isNumericStyle(style)) {
 						align = CellStyle.ALIGN_RIGHT;
 					} else {
 						align = CellStyle.ALIGN_LEFT;

@@ -131,6 +131,44 @@ public class ExcelUtils {
 		}
 		return bDate;
 	}
+
+	public static boolean isNumericStyle(CellStyle style) {
+		if (style == null) {
+			return false;
+		}
+		String str = style.getDataFormatString();
+		if (str == null || str.length() == 0) {
+			return false;
+		}
+		boolean skip = false;
+		for (int i=0; i<str.length(); i++) {
+			char c = str.charAt(i);
+			if (skip) {
+				if (c == ']') {
+					skip = false;
+				}
+				continue;
+			}
+			switch (c) {
+				case '0':
+				case '#':
+				case '\\':
+				case '(':
+				case ')':
+				case ',':
+				case ';':
+				case '_':
+				case '-':
+					break;
+				case '[':
+					skip = true;
+					break;
+				default:
+					return false;
+			}
+		}
+		return true;
+	}
 	
 	/**
 	 * フォーマットが日付書式であるかどうかを判定します

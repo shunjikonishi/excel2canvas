@@ -176,6 +176,10 @@
 		}
 		
 		canvas.attr("width", data.width).attr("height", data.height);
+		holder.css({
+			"width" : data.width,
+			"height" : data.height
+		});
 		context = canvas[0].getContext("2d");
 		context.fillStyle = "white";
 		context.fillRect(0, 0, data.width, data.height);
