@@ -34,6 +34,10 @@ import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFDataValidation;
+
+import jp.co.flect.excel2canvas.validator.Validator;
 
 /**
  * Utility
@@ -521,6 +525,26 @@ public class ExcelUtils {
 			}
 			if (cellList.size() > 0) {
 				ret.add(new NamedCellInfo(temp.name, cellList));
+			}
+		}
+		return ret;
+	}
+
+	public static List<Validator> getValidators(Workbook workbook) {
+		List<Validator> ret = new ArrayList<Validator>();
+		for (int i=0; i<workbook.getNumberOfSheets(); i++) {
+			Sheet sheet = workbook.getSheetAt(i);
+			ret.addAll(getValidators(sheet));
+		}
+		return ret;
+	}
+
+	public static List<Validator> getValidators(Sheet sheet) {
+		List<Validator> ret = new ArrayList<Validator>();
+		if (sheet instanceof XSSFSheet) {
+			XSSFSheet xs = (XSSFSheet)sheet;
+			for (XSSFDataValidation dv : xs.getDataValidations()) {
+				ret.add(new Validator(dv));
 			}
 		}
 		return ret;
