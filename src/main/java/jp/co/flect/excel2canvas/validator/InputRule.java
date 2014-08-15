@@ -9,9 +9,10 @@ import org.apache.poi.ss.util.CellRangeAddressList;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import com.google.gson.Gson;
 
-public class Validator {
+public class InputRule {
 
 	private boolean empty;
 	private String errTitle;
@@ -31,9 +32,9 @@ public class Validator {
 	private int vt;
 
 	private transient CellRangeAddressList regions;
-	private transient Processor processor;
+	private transient Validator validator;
 
-	public Validator(XSSFDataValidation dv) {
+	public InputRule(XSSFDataValidation dv) {
 		empty = dv.getEmptyCellAllowed();
 		errTitle = dv.getErrorBoxTitle();
 		errText = dv.getErrorBoxText();
@@ -80,41 +81,41 @@ public class Validator {
 			}
 			throw new Exception("Value is required.");
 		}
-		if (processor == null) {
-			processor = createProcessor();
+		if (validator == null) {
+			validator = createValidator();
 		}
-		if (!processor.validate(value)) {
+		if (!validator.validate(value)) {
 			throw new Exception("Invalid value.");
 		}
 	}
 
-	private Processor createProcessor() {
+	private Validator createValidator() {
 		switch (vt) {
 			case ANY:
-				return new StringProcessor();
+				return new StringValidator();
 			case INTEGER:
-				return new IntegerProcessor();
+				return new IntegerValidator();
 			case DECIMAL:
-				return new DecimalProcessor();
+				return new DecimalValidator();
 			case LIST:
-				return new ListProcessor();
+				return new ListValidator();
 			case DATE:
-				return new DateProcessor();
+				return new DateValidator();
 			case TIME:
-				return new TimeProcessor();
+				return new TimeValidator();
 			case TEXT_LENGTH:
-				return new TextLengthProcessor();
+				return new TextLengthValidator();
 			case FORMULA:
 			default:
-				return new FormulaProcessor();
+				return new FormulaValidator();
 		}
 	}
 
-	private static interface Processor {
+	private static interface Validator {
 		public boolean validate(String value) throws Exception;
 	}
 
-	private class StringProcessor implements Processor {
+	private class StringValidator implements Validator {
 		public boolean validate(String value) throws Exception {
 			String v = value;
 			switch (op) {
@@ -139,7 +140,7 @@ public class Validator {
 			}
 		}
 	}
-	private class IntegerProcessor implements Processor {
+	private class IntegerValidator implements Validator {
 		private long l1 = f1 == null ? 0 : Long.parseLong(f1);
 		private long l2 = f2 == null ? 0 : Long.parseLong(f2);
 
@@ -167,7 +168,7 @@ public class Validator {
 			}
 		}
 	}
-	private class DecimalProcessor implements Processor {
+	private class DecimalValidator implements Validator {
 		private BigDecimal d1 = f1 == null ? null : new BigDecimal(f1);
 		private BigDecimal d2 = f2 == null ? null : new BigDecimal(f2);
 
@@ -195,7 +196,7 @@ public class Validator {
 			}
 		}
 	}
-	private class ListProcessor implements Processor {
+	private class ListValidator implements Validator {
 		public boolean validate(String value) throws Exception {
 			if (list == null || list.length == 0) {
 				return false;
@@ -208,7 +209,7 @@ public class Validator {
 			return false;
 		}
 	}
-	private class DateProcessor implements Processor {
+	private class DateValidator implements Validator {
 		private DateTime d1 = f1 == null ? null : DateTime.parse(f1);
 		private DateTime d2 = f2 == null ? null : DateTime.parse(f2);
 
@@ -236,7 +237,7 @@ public class Validator {
 			}
 		}
 	}
-	private class TimeProcessor implements Processor {
+	private class TimeValidator implements Validator {
 		private LocalTime t1 = f1 == null ? null : LocalTime.parse(f1);
 		private LocalTime t2 = f1 == null ? null : LocalTime.parse(f2);
 
@@ -264,7 +265,7 @@ public class Validator {
 			}
 		}
 	}
-	private class TextLengthProcessor implements Processor {
+	private class TextLengthValidator implements Validator {
 		private int i1 = f1 == null ? 0 : Integer.parseInt(f1);
 		private int i2 = f2 == null ? 0 : Integer.parseInt(f2);
 
@@ -292,7 +293,7 @@ public class Validator {
 			}
 		}
 	}
-	private class FormulaProcessor implements Processor {
+	private class FormulaValidator implements Validator {
 		public boolean validate(String value) throws Exception {
 			//Not implement
 			return true;
@@ -303,8 +304,8 @@ public class Validator {
 		return new Gson().toJson(this);
 	}
 
-	public static Validator fromJson(String json) {
-		Validator ret = new Gson().fromJson(json, Validator.class);
+	public static InputRule fromJson(String json) {
+		InputRule ret = new Gson().fromJson(json, InputRule.class);
 		CellRangeAddressList list = new CellRangeAddressList();
 		for (String str : ret.regionsStr) {
 			list.addCellRangeAddress(CellRangeAddress.valueOf(str));
@@ -312,4 +313,28 @@ public class Validator {
 		ret.regions = list;
 		return ret;
 	}
+
+	private static boolean compare(String s1, String s2) {
+		if (s1 == null) return s2 == null;
+		return s1.equals(s2);
+	}
+
+	public boolean ruleEquals(InputRule rule) {
+		return 
+			this.empty == rule.empty &&
+			compare(this.errTitle, rule.errTitle) &&
+			compare(this.errText, rule.errText) &&
+			this.errStyle == rule.errStyle &&
+			compare(this.pmTitle, rule.pmTitle) &&
+			compare(this.pmText, rule.pmText) &&
+			Arrays.equals(this.list, rule.list) &&
+			compare(this.f1, rule.f1) &&
+			compare(this.f2, rule.f2) &&
+			this.op == rule.op &&
+			this.vt == rule.vt;
+	}
+
+	@Override
+	public String toString() { return toJson();}
+
 }
