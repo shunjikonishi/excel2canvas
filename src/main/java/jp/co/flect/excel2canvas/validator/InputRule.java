@@ -6,11 +6,20 @@ import org.apache.poi.ss.usermodel.DataValidationConstraint;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.util.AreaReference;
+import org.apache.poi.ss.util.CellReference;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
 import com.google.gson.Gson;
+
+import jp.co.flect.excel2canvas.ExcelUtils;
+import jp.co.flect.excel2canvas.CellValueHelper;
 
 public class InputRule {
 
@@ -34,7 +43,7 @@ public class InputRule {
 	private transient CellRangeAddressList regions;
 	private transient Validator validator;
 
-	public InputRule(XSSFDataValidation dv) {
+	public InputRule(Sheet sheet, XSSFDataValidation dv) {
 		empty = dv.getEmptyCellAllowed();
 		errTitle = dv.getErrorBoxTitle();
 		errText = dv.getErrorBoxText();
@@ -50,11 +59,13 @@ public class InputRule {
 		}
 
 		DataValidationConstraint vc = dv.getValidationConstraint();
-		list = vc.getExplicitListValues();
 		f1 = vc.getFormula1();
 		f2 = vc.getFormula2();
 		op = vc.getOperator();
 		vt = vc.getValidationType();
+		if (vt == DataValidationConstraint.ValidationType.LIST) {
+			list = buildList(sheet, f1);
+		}
 	}
 
 	public boolean getAllowEmpty() { return empty;}
@@ -337,4 +348,45 @@ public class InputRule {
 	@Override
 	public String toString() { return toJson();}
 
+	private static String[] buildList(Sheet sheet, String str) {
+		if (str == null || str.length() == 0) {
+			return new String[0];
+		}
+		if (str.length() > 2 && str.charAt(0) == '"' && str.charAt(str.length() - 1) == '"') {
+			str = str.substring(1, str.length() - 1);
+		}
+		if (str.indexOf(',') != -1) {
+			String[] ret = str.split(",");
+			for (int i=0; i<ret.length; i++) {
+				ret[i] = ret[i].trim();
+			}
+			return ret;
+		}
+		String sheetName = null;
+		int sheetIndex = str.indexOf("!");
+		if (sheetIndex != -1) {
+			sheetName = str.substring(0, sheetIndex);
+			str = str.substring(sheetIndex + 1);
+		}
+		if (sheetName != null && !sheetName.equals(sheet.getSheetName())) {
+			sheet = sheet.getWorkbook().getSheet(sheetName);
+		}
+		List<String> list = new ArrayList<String>();
+		try {
+			CellValueHelper helper = new CellValueHelper(sheet.getWorkbook(), true);
+			AreaReference area = new AreaReference(str);
+			for (CellReference cRef : area.getAllReferencedCells()) {
+				Cell cell = ExcelUtils.getCell(sheet, cRef.getRow(), cRef.getCol());
+				String value = cell == null ? null : helper.getFormattedValue(cell).getValue();
+				if (value != null && value.length() > 0) {
+					list.add(value);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			list.add(str);
+		}
+		String[] ret = new String[list.size()];
+		return (String[])list.toArray(ret);
+	}
 }

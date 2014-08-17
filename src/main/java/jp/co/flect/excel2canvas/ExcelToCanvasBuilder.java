@@ -341,7 +341,7 @@ public class ExcelToCanvasBuilder {
 			int x = 0;
 			for (int j=startCol; j<this.maxCol; j++) {
 				Cell cell = row == null ? null : row.getCell(j);
-				CellWrapper cw = new CellWrapper(cell, i, j, x, y);
+				CellWrapper cw = new CellWrapper(sheet, cell, i, j, x, y);
 				this.cells[i-startRow][j-startCol] = cw;
 				x += getColumnWidth(j);
 			}
@@ -835,6 +835,7 @@ public class ExcelToCanvasBuilder {
 	
 	public class CellWrapper {
 		
+		private Sheet sheet;
 		private Cell cell;
 		private int col;
 		private int row;
@@ -843,7 +844,8 @@ public class ExcelToCanvasBuilder {
 		private CellRangeAddress mergedRegion;
 		private FormattedValue formattedValue;
 		
-		public CellWrapper(Cell cell, int row, int col, int left, int top) {
+		public CellWrapper(Sheet sheet, Cell cell, int row, int col, int left, int top) {
+			this.sheet = sheet;
 			this.cell = cell;
 			this.row = row;
 			this.col = col;
@@ -1164,10 +1166,10 @@ public class ExcelToCanvasBuilder {
 		}
 		
 		private boolean isIncludeCell(String id) {
-			if (includeCells == null || this.cell == null) {
+			if (includeCells == null) {
 				return false;
 			}
-			return includeCells.contains(id) || includeCells.contains(this.cell.getSheet().getSheetName() + "!" + id);
+			return includeCells.contains(id) || includeCells.contains(sheet.getSheetName() + "!" + id);
 		}
 
 		private String convertHtml(String value) {

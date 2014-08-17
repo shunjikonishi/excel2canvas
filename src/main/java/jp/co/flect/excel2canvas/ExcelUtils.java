@@ -367,6 +367,14 @@ public class ExcelUtils {
 		return cell;
 	}
 	
+	public static Cell getCell(Sheet sheet, int rc, int cc) {
+		Row row = sheet.getRow(rc);
+		if (row == null) {
+			return null;
+		}
+		return row.getCell(cc);
+	}
+
 	/**
 	 * CellStyleに何も情報が設定されていない場合にtrueを返す
 	 */
@@ -544,7 +552,7 @@ public class ExcelUtils {
 		if (sheet instanceof XSSFSheet) {
 			XSSFSheet xs = (XSSFSheet)sheet;
 			for (XSSFDataValidation dv : xs.getDataValidations()) {
-				ret.add(new InputRule(dv));
+				ret.add(new InputRule(sheet, dv));
 			}
 		}
 		return ret;
