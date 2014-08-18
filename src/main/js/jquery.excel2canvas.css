@@ -65,13 +65,3 @@
 	background-color: #FFFFFF;
 	z-index: 2;
 }
-
-input.cellInput, textarea.cellInput, select.cellInput {
-	margin:1px 4px;
-	padding: 0 2px;
-	background: none;
-	border: none;
-	resize: none;
-	background-color: rgba(180,180,180,0.2);
-	border-radius: 3px;
-}
