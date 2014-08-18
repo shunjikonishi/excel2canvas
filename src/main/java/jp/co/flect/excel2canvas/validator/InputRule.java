@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import java.text.ParseException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.w3c.dom.Node;
@@ -175,24 +176,31 @@ public class InputRule {
 		return false;
 	}
 
-	public void validator(String value) throws Exception {
+	public void validate(String value) throws Exception {
 		if (value == null || value.length() == 0) {
 			if (empty) {
 				return;
 			}
-			throw new Exception("Value is required.");
+			throw new EmptyValueException("Value is required.");
 		}
 		if (validator == null) {
 			validator = createValidator();
 		}
-		if (!validator.validate(value)) {
-			throw new Exception("Invalid value.");
+		try {
+			if (!validator.validate(value)) {
+				throw new InvalidValueException("Invalid value.");
+			}
+		} catch (NumberFormatException e) {
+			throw new InvalidValueException(e);
+		} catch (ParseException e) {
+			throw new InvalidValueException(e);
+		} catch (IllegalArgumentException e) {
+			throw new InvalidValueException(e);
 		}
 	}
 
 	private Validator createValidator() {
-		switch (vt) {
-			case ANY:
+		switch (vt) {			case ANY:
 				return new StringValidator();
 			case INTEGER:
 				return new IntegerValidator();
@@ -223,7 +231,7 @@ public class InputRule {
 				case BETWEEN:
 					return v.compareTo(f1) >= 0 && v.compareTo(f2) <= 0;
 				case NOT_BETWEEN:
-					return v.compareTo(f1) <= 0 && v.compareTo(f2) >= 0;
+					return v.compareTo(f1) < 0 || v.compareTo(f2) > 0;
 				case EQUAL:
 					return v.compareTo(f1) == 0;
 				case NOT_EQUAL:
@@ -251,7 +259,7 @@ public class InputRule {
 				case BETWEEN:
 					return v >= l1 && v <= l2;
 				case NOT_BETWEEN:
-					return v <= l1 && v >= l2;
+					return v < l1 || v > l2;
 				case EQUAL:
 					return v == l1;
 				case NOT_EQUAL:
@@ -279,7 +287,7 @@ public class InputRule {
 				case BETWEEN:
 					return v.compareTo(d1) >= 0 && v.compareTo(d2) <= 0;
 				case NOT_BETWEEN:
-					return v.compareTo(d1) <= 0 && v.compareTo(d2) >= 0;
+					return v.compareTo(d1) < 0 || v.compareTo(d2) > 0;
 				case EQUAL:
 					return v.compareTo(d1) == 0;
 				case NOT_EQUAL:
@@ -320,7 +328,7 @@ public class InputRule {
 				case BETWEEN:
 					return v.compareTo(d1) >= 0 && v.compareTo(d2) <= 0;
 				case NOT_BETWEEN:
-					return v.compareTo(d1) <= 0 && v.compareTo(d2) >= 0;
+					return v.compareTo(d1) < 0 || v.compareTo(d2) > 0;
 				case EQUAL:
 					return v.compareTo(d1) == 0;
 				case NOT_EQUAL:
@@ -348,7 +356,7 @@ public class InputRule {
 				case BETWEEN:
 					return v.compareTo(t1) >= 0 && v.compareTo(t2) <= 0;
 				case NOT_BETWEEN:
-					return v.compareTo(t1) <= 0 && v.compareTo(t2) >= 0;
+					return v.compareTo(t1) < 0 || v.compareTo(t2) > 0;
 				case EQUAL:
 					return v.compareTo(t1) == 0;
 				case NOT_EQUAL:
@@ -376,7 +384,7 @@ public class InputRule {
 				case BETWEEN:
 					return v >= i1 && v <= i2;
 				case NOT_BETWEEN:
-					return v <= i1 && v >= i2;
+					return v < i1 || v > i2;
 				case EQUAL:
 					return v == i1;
 				case NOT_EQUAL:
@@ -543,5 +551,19 @@ public class InputRule {
 		return true;
 	}
 
+	public static class InvalidValueException extends Exception {
+		public InvalidValueException(String msg) {
+			super(msg);
+		}
 
+		public InvalidValueException(Throwable e) {
+			super(e);
+		}
+	}
+
+	public static class EmptyValueException extends Exception {
+		public EmptyValueException(String msg) {
+			super(msg);
+		}
+	}
 }
