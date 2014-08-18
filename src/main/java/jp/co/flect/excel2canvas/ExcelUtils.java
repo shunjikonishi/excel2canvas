@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
+import org.w3c.dom.Element;
 
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -38,6 +39,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 
 import jp.co.flect.excel2canvas.validator.InputRule;
+import jp.co.flect.excel2canvas.validator.ExtDataValidationExtractor;
 
 /**
  * Utility
@@ -553,6 +555,13 @@ public class ExcelUtils {
 			XSSFSheet xs = (XSSFSheet)sheet;
 			for (XSSFDataValidation dv : xs.getDataValidations()) {
 				ret.add(new InputRule(sheet, dv));
+			}
+			List<Element> extList = new ExtDataValidationExtractor().getDataValidationNode(xs);
+			for (Element el : extList) {
+				InputRule rule = InputRule.fromDataValidationNode(xs, el);
+				if (rule != null) {
+					ret.add(rule);
+				}
 			}
 		}
 		return ret;

@@ -10,6 +10,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.ss.usermodel.Name;
+import org.apache.poi.hssf.record.cf.CellRangeUtil;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
 import java.math.BigDecimal;
@@ -17,12 +19,24 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import jp.co.flect.excel2canvas.ExcelUtils;
 import jp.co.flect.excel2canvas.CellValueHelper;
 
 public class InputRule {
+
+	//type="list" only
+	public static InputRule fromDataValidationNode(Sheet sheet, Element el) {
+		String localName = el.getLocalName();
+		String type = el.getAttribute("type");
+		if (!"dataValidation".equals(localName) || !"list".equals(type)) {
+			return null;
+		}
+		return new InputRule(sheet, el);
+	}
 
 	private boolean empty;
 	private String errTitle;
@@ -46,11 +60,15 @@ public class InputRule {
 
 	public InputRule(Sheet sheet, XSSFDataValidation dv) {
 		empty = dv.getEmptyCellAllowed();
-		errTitle = dv.getErrorBoxTitle();
-		errText = dv.getErrorBoxText();
-		errStyle = dv.getErrorStyle();
-		pmTitle = dv.getPromptBoxTitle();
-		pmText = dv.getPromptBoxText();
+		if (dv.getShowErrorBox()) {
+			errTitle = dv.getErrorBoxTitle();
+			errText = dv.getErrorBoxText();
+			errStyle = dv.getErrorStyle();
+		}
+		if (dv.getShowPromptBox()) {
+			pmTitle = dv.getPromptBoxTitle();
+			pmText = dv.getPromptBoxText();
+		}
 
 		regions = dv.getRegions();
 		regionsStr = new String[regions.countRanges()];
@@ -69,6 +87,52 @@ public class InputRule {
 		}
 	}
 
+	/*
+	<x14:dataValidation type="list" allowBlank="1" showInputMessage="1" showErrorMessage="1" errorTitle="rrr" error="xxxx" promptTitle="sss" prompt="nnn">
+	  <x14:formula1>
+	    <xm:f>Sheet2!$A$1:$A$3</xm:f>
+	  </x14:formula1>
+	  <xm:sqref>B5</xm:sqref>
+	</x14:dataValidation>
+	x14:dataValidations>
+	*/
+	private InputRule(Sheet sheet, Element el) {
+		empty = "1".equals(el.getAttribute("allowBlank"));
+		if ("1".equals(el.getAttribute("showErrorMessage"))) {
+			errTitle = checkNull(el.getAttribute("errorTitle"));
+			errText = checkNull(el.getAttribute("error"));
+			//errStyle = ???
+		}
+		if ("1".equals(el.getAttribute("showInputMessage"))) {
+			pmTitle = checkNull(el.getAttribute("promptTitle"));
+			pmText = checkNull(el.getAttribute("prompt"));
+		}
+		String region = null;
+		Node node = el.getFirstChild();
+		while (node != null) {
+			String name = node.getLocalName();
+			if ("formula1".equals(name)) {
+				f1 = getChildText((Element)node);
+			} else if ("formula2".equals(name)) {
+				f2 = getChildText((Element)node);
+			} else if ("sqref".equals(name)) {
+				region = getChildText((Element)node);
+			}
+			node = node.getNextSibling();
+		}
+		if (f1 == null || region == null) {
+			throw new IllegalArgumentException("Invalid element: " + el.getNodeName());
+		}
+		regionsStr = new String[1];
+		regionsStr[0] = region;
+		regions = new CellRangeAddressList();
+		regions.addCellRangeAddress(CellRangeAddress.valueOf(region));
+
+		//op = ???
+		vt = DataValidationConstraint.ValidationType.LIST;
+		list = buildList(sheet, f1);
+	}
+
 	public boolean getAllowEmpty() { return empty;}
 	public String getErrorTitle() { return errTitle;}
 	public String getErrorText() { return errText;}
@@ -85,6 +149,31 @@ public class InputRule {
 
 	public int getOperator() { return op;}
 	public int getValidationType() { return vt;}
+
+	public boolean isOverlapped(Name name) {
+		String ref = name.getRefersToFormula();
+		int idx = ref.indexOf('!');
+		if (idx != -1) {
+			ref = ref.substring(idx + 1);
+		}
+		AreaReference area = new AreaReference(ref);
+		CellReference topLeft = area.getFirstCell();
+		CellReference bottomRight = area.getLastCell();
+		CellRangeAddress cra = new CellRangeAddress(
+			topLeft.getRow(), bottomRight.getRow(), 
+			topLeft.getCol(), bottomRight.getCol()
+		);
+		return isOverlapped(cra);
+	}
+
+	public boolean isOverlapped(CellRangeAddress cra) {
+		for (CellRangeAddress c : this.regions.getCellRangeAddresses()) {
+			if (CellRangeUtil.intersect(cra, c) != CellRangeUtil.NO_INTERSECTION) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public void validator(String value) throws Exception {
 		if (value == null || value.length() == 0) {
@@ -318,17 +407,33 @@ public class InputRule {
 
 	public static InputRule fromJson(String json) {
 		InputRule ret = new Gson().fromJson(json, InputRule.class);
+		setupRegions(ret);
+		return ret;
+	}
+
+	private static void setupRegions(InputRule rule) {
 		CellRangeAddressList list = new CellRangeAddressList();
-		for (String str : ret.regionsStr) {
+		for (String str : rule.regionsStr) {
 			list.addCellRangeAddress(CellRangeAddress.valueOf(str));
 		}
-		ret.regions = list;
+		rule.regions = list;
+	}
+
+	public static List<InputRule> fromJsonArray(String json) {
+		List<InputRule> ret = new Gson().fromJson(json, new TypeToken<List<InputRule>>() {}.getType());
+		for (InputRule rule : ret) {
+			setupRegions(rule);
+		}
 		return ret;
 	}
 
 	private static boolean compare(String s1, String s2) {
 		if (s1 == null) return s2 == null;
 		return s1.equals(s2);
+	}
+
+	private static String checkNull(String s) {
+		return s != null && s.length() > 0 ? s : null;
 	}
 
 	public boolean ruleEquals(InputRule rule) {
@@ -356,6 +461,7 @@ public class InputRule {
 		if (str.length() > 2 && str.charAt(0) == '"' && str.charAt(str.length() - 1) == '"') {
 			str = str.substring(1, str.length() - 1);
 		}
+		//Comma separated literal
 		if (str.indexOf(',') != -1) {
 			String[] ret = str.split(",");
 			for (int i=0; i<ret.length; i++) {
@@ -363,19 +469,26 @@ public class InputRule {
 			}
 			return ret;
 		}
-		String sheetName = null;
+
+		List<String> list = new ArrayList<String>();
+		//Name reference
+		Name name = sheet.getWorkbook().getName(str);
+		if (name != null) {
+			str = name.getRefersToFormula();
+		}
+		//Cell reference
+		String refStr = str;
 		int sheetIndex = str.indexOf("!");
 		if (sheetIndex != -1) {
-			sheetName = str.substring(0, sheetIndex);
-			str = str.substring(sheetIndex + 1);
+			String sheetName = str.substring(0, sheetIndex);
+			if (!sheetName.equals(sheet.getSheetName())) {
+				sheet = sheet.getWorkbook().getSheet(sheetName);
+			}
+			refStr = str.substring(sheetIndex + 1);
 		}
-		if (sheetName != null && !sheetName.equals(sheet.getSheetName())) {
-			sheet = sheet.getWorkbook().getSheet(sheetName);
-		}
-		List<String> list = new ArrayList<String>();
 		try {
+			AreaReference area = new AreaReference(refStr);
 			CellValueHelper helper = new CellValueHelper(sheet.getWorkbook(), true);
-			AreaReference area = new AreaReference(str);
 			for (CellReference cRef : area.getAllReferencedCells()) {
 				Cell cell = ExcelUtils.getCell(sheet, cRef.getRow(), cRef.getCol());
 				String value = cell == null ? null : helper.getFormattedValue(cell).getValue();
@@ -384,10 +497,51 @@ public class InputRule {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			list.add(str);
 		}
 		String[] ret = new String[list.size()];
 		return (String[])list.toArray(ret);
 	}
+
+	private static String getChildText(Element el) {
+		StringBuilder buf = new StringBuilder();
+		buildChildText(el, buf);
+		return buf.toString();
+	}
+
+	private static void buildChildText(Element el, StringBuilder buf) {
+		Node node = el.getFirstChild();
+		while (node != null) {
+			int type = node.getNodeType();
+			switch (type) {
+				case Node.TEXT_NODE:
+				case Node.CDATA_SECTION_NODE:
+					String str = node.getNodeValue();
+					if (!isWhitespace(str)) {
+						buf.append(str);
+					}
+					break;
+				case Node.ELEMENT_NODE:
+					buildChildText((Element)node, buf);
+					break;
+			}
+			node = node.getNextSibling();
+		}
+	}
+
+	private static boolean isWhitespace(String s) {
+		if (s == null || s.length() == 0) {
+			return true;
+		}
+		for (int i=0; i<s.length(); i++) {
+			char c = s.charAt(i);
+			if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
+				continue;
+			}
+			return false;
+		}
+		return true;
+	}
+
+
 }

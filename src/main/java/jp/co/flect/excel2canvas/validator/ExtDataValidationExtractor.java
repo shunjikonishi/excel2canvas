@@ -14,15 +14,7 @@ import org.w3c.dom.Element;
 
 public class ExtDataValidationExtractor {
 
-	public List<Element> getDataValidationElement(XSSFWorkbook workbook) {
-		List<Element> list = new ArrayList<Element>();
-		for (int i=0; i<workbook.getNumberOfSheets(); i++) {
-			list.addAll(getDataValidationElement((XSSFSheet)workbook.getSheetAt(i)));
-		}
-		return list;
-	}
-
-	public List<Element> getDataValidationElement(XSSFSheet sheet) {
+	public List<Element> getDataValidationNode(XSSFSheet sheet) {
 		CTWorksheet ctWorksheet = sheet.getCTWorksheet();
 		CTExtensionList extList = ctWorksheet.getExtLst();
 		if (extList == null) {

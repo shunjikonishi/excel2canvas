@@ -18,6 +18,8 @@ public class NamedCellInfo {
 		this.name = name;
 		this.list = list;
 	}
+
+	public Name getPoiName() { return this.name;}
 	
 	public String getName() { return this.name.getNameName();}
 	public String getRange() { return this.name.getRefersToFormula();}
