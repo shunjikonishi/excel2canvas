@@ -165,6 +165,7 @@ public class ExcelUtils {
 				case ';':
 				case '_':
 				case '-':
+				case ' ':
 					break;
 				case '[':
 					skip = true;

@@ -183,6 +183,9 @@ public class InputRule {
 			}
 			throw new EmptyValueException("Value is required.");
 		}
+		if (f1 == null) {
+			return;
+		}
 		if (validator == null) {
 			validator = createValidator();
 		}
