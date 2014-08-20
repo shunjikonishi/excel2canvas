@@ -22,6 +22,8 @@ public class CellValueHelper {
 	private static final String[] DATE_FORMATS = {
 		"yyyy-MM-dd",
 		"yyyy-MM-dd HH:mm:ss",
+		"yyyy/MM/dd",
+		"yyyy/MM/dd HH:mm:ss",
 		"HH:mm:ss"
 	};
 	
