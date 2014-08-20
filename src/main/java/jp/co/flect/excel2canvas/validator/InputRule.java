@@ -38,8 +38,7 @@ public class InputRule {
 
 	static {
 		DateTimeParser[] parsers = {
-			DateTimeFormat.forPattern("yyyy-MM-dd").getParser(),
-			DateTimeFormat.forPattern("yyyy/MM/dd").getParser()
+			DateTimeFormat.forPattern("yyyy-MM-dd").getParser()
 		};
 		DATE_FORMATTER = new DateTimeFormatterBuilder().append(null, parsers).toFormatter();
 	}
