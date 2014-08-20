@@ -11,9 +11,14 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.ss.usermodel.Name;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.hssf.record.cf.CellRangeUtil;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
+import org.joda.time.format.DateTimeFormatterBuilder;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeParser;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
@@ -29,6 +34,29 @@ import jp.co.flect.excel2canvas.CellValueHelper;
 
 public class InputRule {
 
+	private static final DateTimeFormatter DATE_FORMATTER;
+
+	static {
+		DateTimeParser[] parsers = {
+			DateTimeFormat.forPattern("yyyy-MM-dd").getParser(),
+			DateTimeFormat.forPattern("yyyy/MM/dd").getParser()
+		};
+		DATE_FORMATTER = new DateTimeFormatterBuilder().append(null, parsers).toFormatter();
+	}
+
+	public static DateTime parseDateTime(String str) {
+		try {
+			return DATE_FORMATTER.parseDateTime(str);
+		} catch (IllegalArgumentException e) {
+			try {
+				double n = Double.parseDouble(str);
+				return new DateTime(DateUtil.getJavaDate(n));
+			} catch (NumberFormatException e2) {
+				//Ignore
+			}
+			throw e;//Rethrow IllegalArgumentException
+		}
+	}
 	//type="list" only
 	public static InputRule fromDataValidationNode(Sheet sheet, Element el) {
 		String localName = el.getLocalName();
@@ -322,11 +350,11 @@ public class InputRule {
 		}
 	}
 	private class DateValidator implements Validator {
-		private DateTime d1 = f1 == null ? null : DateTime.parse(f1);
-		private DateTime d2 = f2 == null ? null : DateTime.parse(f2);
+		private DateTime d1 = f1 == null ? null : parseDateTime(f1);
+		private DateTime d2 = f2 == null ? null : parseDateTime(f2);
 
 		public boolean validate(String value) throws Exception {
-			DateTime v = DateTime.parse(value);
+			DateTime v = parseDateTime(value);
 			switch (op) {
 				case BETWEEN:
 					return v.compareTo(d1) >= 0 && v.compareTo(d2) <= 0;
@@ -569,4 +597,16 @@ public class InputRule {
 			super(msg);
 		}
 	}
+
+	//For Test
+	static InputRule forTest(int vt, int op, String f1, String f2) {
+		return new InputRule(vt, op, f1, f2);
+	}
+	private InputRule(int vt, int op, String f1, String f2) {
+		this.vt = vt;
+		this.op = op;
+		this.f1 = f1;
+		this.f2 = f2;
+	}
+
 }
