@@ -102,6 +102,8 @@ public class ExcelToCanvas {
 	}
 	
 	private String getStyle(String key) { return this.styles.get(key);}
+
+	public Map<String, String> getStyles() { return this.styles;}
 	
 	//package local constructor
 	ExcelToCanvas() {}
@@ -228,7 +230,7 @@ public class ExcelToCanvas {
 		
 	}
 	
-	private static String mapToStyle(Map<String, String> map) {
+	public static String mapToStyle(Map<String, String> map) {
 		StringBuilder buf = new StringBuilder();
 		for (Map.Entry<String, String> entry : map.entrySet()) {
 			buf.append(entry.getKey()).append(":")
@@ -237,15 +239,17 @@ public class ExcelToCanvas {
 		return buf.toString();
 	}
 	
-	private static Map<String, String> styleToMap(String str) {
+	public static Map<String, String> styleToMap(String str) {
 		Map<String, String> map = new HashMap<String, String>();
 		String[] values = str.split(";");
 		for (String value : values) {
 			value = value.trim();
 			int idx = value.indexOf(':');
-			map.put(value.substring(0, idx).trim(), value.substring(idx + 1).trim());
+			if (idx != -1) {
+				map.put(value.substring(0, idx).trim(), value.substring(idx + 1).trim());
+			}
 		}
-		return map;
+		return map.size() == 0 ? null : map;
 	}
 	
 	public static class StrInfo {
