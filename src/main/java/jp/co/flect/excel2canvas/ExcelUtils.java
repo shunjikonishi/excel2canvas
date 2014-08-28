@@ -139,10 +139,10 @@ public class ExcelUtils {
 	}
 
 	public static boolean isNumericStyle(CellStyle style) {
-		if (style == null) {
-			return false;
-		}
-		String str = style.getDataFormatString();
+		return style != null && isNumericStyle(style.getDataFormatString());
+	}
+
+	public static boolean isNumericStyle(String str) {
 		if (str == null || str.length() == 0) {
 			return false;
 		}
@@ -150,12 +150,13 @@ public class ExcelUtils {
 		for (int i=0; i<str.length(); i++) {
 			char c = str.charAt(i);
 			if (skip) {
-				if (c == ']') {
+				if (c == ']' || c == '"') {
 					skip = false;
 				}
 				continue;
 			}
 			switch (c) {
+				case '@':
 				case '0':
 				case '#':
 				case '\\':
@@ -168,6 +169,7 @@ public class ExcelUtils {
 				case ' ':
 					break;
 				case '[':
+				case '"':
 					skip = true;
 					break;
 				default:
@@ -481,8 +483,11 @@ public class ExcelUtils {
 			//isDeleted, isFunctionNameは正しい値を返さないことがあり、
 			//その場合getSheetNameの実行またはAreaReferenceの生成でエラーとなる
 			//それらは正しい名前参照ではないのでNamedCellInfoのListには含めない
+			Name name = workbook.getNameAt(i);
 			try {
-				Name name = workbook.getNameAt(i);
+				if (name.getSheetName() == null) {
+					continue;
+				}
 				if (name.isFunctionName() || name.isDeleted()) {
 					continue;
 				}
@@ -499,7 +504,7 @@ public class ExcelUtils {
 				tempList.add(new TempName(name, area, sheet.getNumMergedRegions()));
 			} catch (Exception e) {
 				//Ignore
-				e.printStackTrace();
+				System.out.println("Ignore error of ExcelUtils#createNamedList: " + name.getNameName() + ", " + e.toString());
 			}
 		}
 		for (Sheet sheet : sheetSet) {

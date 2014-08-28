@@ -1069,17 +1069,35 @@ public class ExcelToCanvasBuilder {
 			int startRow = readRange == null ? 0 : readRange.y;
 			int startCol = readRange == null ? 0 : readRange.x;
 			int width = getWidth();
-			if (comment == null && !bIncludeCell && isExpandCell(style, align)) {
-				for (int i=this.col + 1; i<maxCol; i++) {
-					CellWrapper next = cells[this.row - startRow][i - startCol];
-					CellStyle nextStyle = next.getCellStyle();
-					if (next.getText() == null && (nextStyle == null || nextStyle.getBorderLeft() == CellStyle.BORDER_NONE)) {
-						width += getColumnWidth(i);
-						if (nextStyle != null && nextStyle.getBorderRight() != CellStyle.BORDER_NONE) {
+			if (comment == null && !bIncludeCell) {
+				if (isExpandCellRight(style, align)) {
+					for (int i=this.col + 1; i<maxCol; i++) {
+						CellWrapper next = cells[this.row - startRow][i - startCol];
+						CellStyle nextStyle = next.getCellStyle();
+						if (!isIncludeCell(next.getId()) && next.getText() == null && (nextStyle == null || nextStyle.getBorderLeft() == CellStyle.BORDER_NONE)) {
+							width += getColumnWidth(i);
+							if (nextStyle != null && nextStyle.getBorderRight() != CellStyle.BORDER_NONE) {
+								break;
+							}
+						} else {
 							break;
 						}
-					} else {
-						break;
+					}
+				}
+				if (isExpandCellLeft(style, align)) {
+					for (int i=this.col - 1; i>=0; i--) {
+						CellWrapper prev = cells[this.row - startRow][i - startCol];
+						CellStyle prevStyle = prev.getCellStyle();
+						if (!isIncludeCell(prev.getId()) && prev.getText() == null && (prevStyle == null || prevStyle.getBorderRight() == CellStyle.BORDER_NONE)) {
+							int w = getColumnWidth(i);
+							width += w;
+							this.left -= w;
+							if (prevStyle != null && prevStyle.getBorderLeft() != CellStyle.BORDER_NONE) {
+								break;
+							}
+						} else {
+							break;
+						}
 					}
 				}
 			}
@@ -1211,7 +1229,7 @@ public class ExcelToCanvasBuilder {
 			return color == null ? null : FormattedValue.getColorString(color);
 		}
 		
-		private boolean isExpandCell(CellStyle style, int align) {
+		private boolean isExpandCellRight(CellStyle style, int align) {
 			if (ExcelToCanvasBuilder.this.includeEmptyStr) {
 				return false;
 			}
@@ -1225,7 +1243,26 @@ public class ExcelToCanvasBuilder {
 				return false;
 			}
 			if (ExcelToCanvasBuilder.this.expandChecker != null) {
-				return ExcelToCanvasBuilder.this.expandChecker.isExpandCell(this);
+				return ExcelToCanvasBuilder.this.expandChecker.isExpandCellRight(this);
+			}
+			return true;
+		}
+
+		private boolean isExpandCellLeft(CellStyle style, int align) {
+			if (ExcelToCanvasBuilder.this.includeEmptyStr) {
+				return false;
+			}
+			if (align != CellStyle.ALIGN_RIGHT) {
+				return false;
+			}
+			if (this.mergedRegion != null) {
+				return false;
+			}
+			if (style != null && style.getBorderLeft() != CellStyle.BORDER_NONE) {
+				return false;
+			}
+			if (ExcelToCanvasBuilder.this.expandChecker != null) {
+				return ExcelToCanvasBuilder.this.expandChecker.isExpandCellLeft(this);
 			}
 			return true;
 		}
@@ -1233,7 +1270,8 @@ public class ExcelToCanvasBuilder {
 	
 	public interface ExpandChecker {
 		
-		public boolean isExpandCell(CellWrapper cw);
+		public boolean isExpandCellRight(CellWrapper cw);
+		public boolean isExpandCellLeft(CellWrapper cw);
 		
 	}
 	

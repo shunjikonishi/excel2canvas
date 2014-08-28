@@ -9,6 +9,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 
+import jp.co.flect.excel2canvas.ExcelUtils;
+
 public class InputRuleTest {
 
 	@Test
@@ -26,6 +28,18 @@ public class InputRuleTest {
 			rule2.validate("2013-12-31");
 			fail();
 		} catch (Exception e) {
+		}
+	}
+
+	public void numericTest() {
+		String[] ok_strs = {
+			"#,##0",
+			"0",
+			"@",
+			"\"$\"#,##0.00_);(\"$\"#,##0.00)"
+		};
+		for (String s : ok_strs) {
+			assertTrue(s, ExcelUtils.isNumericStyle(s));
 		}
 	}
 }
