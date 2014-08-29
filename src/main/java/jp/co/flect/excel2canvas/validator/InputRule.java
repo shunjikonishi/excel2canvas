@@ -166,9 +166,11 @@ public class InputRule {
 	public String getErrorTitle() { return errTitle;}
 	public String getErrorText() { return errText;}
 	public int getErrorStyle() { return errStyle;}
+	public boolean hasOwnErrorText() { return errTitle != null || errText != null;}
 
 	public String getPromptTitle() { return pmTitle;}
 	public String getPromptText() { return pmText;}
+	public boolean hasPrompt() { return pmTitle != null || pmText != null;}
 
 	public String[] getRegions() { return regionsStr;}
 	public String[] getList() { return list;}
@@ -178,6 +180,39 @@ public class InputRule {
 
 	public int getOperator() { return op;}
 	public int getValidationType() { return vt;}
+
+	public String getValidationTerm() {
+		if (vt == ANY || vt == FORMULA) {
+			return null;
+		}
+		if (vt == LIST) {
+			return Arrays.toString(list);
+		}
+		String vStr = vt == TEXT_LENGTH ? "length" : "value";
+		if (f1 == null) {
+			return null;
+		}
+		switch (op) {
+			case BETWEEN:
+				return f1 + " <= " + vStr + " <= " + f2;
+			case NOT_BETWEEN:
+				return vStr + " < " + f1 + " or " + f2 + " < " + vStr;
+			case EQUAL:
+				return vStr + " == " + f1;
+			case NOT_EQUAL:
+				return vStr + " != " + f1;
+			case GREATER_THAN:
+				return vStr + " > " + f1;
+			case LESS_THAN:
+				return vStr + " < " + f1;
+			case GREATER_OR_EQUAL:
+				return vStr + " >= " + f1;
+			case LESS_OR_EQUAL:
+				return vStr + " <= " + f1;
+			default:
+				return null;
+		}
+	}
 
 	public boolean isOverlapped(Name name) {
 		String ref = name.getRefersToFormula();

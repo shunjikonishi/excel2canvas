@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -546,11 +548,11 @@ public class ExcelUtils {
 		return ret;
 	}
 
-	public static List<InputRule> getInputRules(Workbook workbook) {
-		List<InputRule> ret = new ArrayList<InputRule>();
+	public static Map<String, List<InputRule>> getInputRules(Workbook workbook) {
+		Map<String, List<InputRule>> ret = new HashMap<String, List<InputRule>>();
 		for (int i=0; i<workbook.getNumberOfSheets(); i++) {
 			Sheet sheet = workbook.getSheetAt(i);
-			ret.addAll(getInputRules(sheet));
+			ret.put(sheet.getSheetName(), getInputRules(sheet));
 		}
 		return ret;
 	}
