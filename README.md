@@ -102,7 +102,7 @@ Followings are some of its samples.(Japanese only)
 
 Vesion
 ------
-Current version is 1.0.3
+Current version is 1.2.3
 
 Install
 -------
@@ -113,7 +113,7 @@ sbt
 ```
 resolvers += "FLECT" at "http://flect.github.io/maven-repo/"
 
-libraryDependencies += "jp.co.flect" % "excel2canvas" % "1.0.3"
+libraryDependencies += "jp.co.flect" % "excel2canvas" % "1.2.3"
 ```
 
 bower  
@@ -125,16 +125,4 @@ bower install https://github.com/shunjikonishi/excel2canvas.git
 License
 -------
 MIT
-
-Notice
-------
-This library is not released yet.  
-This means
-
-- The method signature of API might be changed.
-- The JSON format might be changed.
-- The chart library might be changed from Flotr2 to any other.
-- Or any other refactoring will be possible.
-
-But the same revision of Java classes and Javascript will always work together.
 
